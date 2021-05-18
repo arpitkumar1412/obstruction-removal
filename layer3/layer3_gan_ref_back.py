@@ -27,6 +27,7 @@ from numpy import savez_compressed
 import torch
 from PIL import Image
 
+
 # load, split and scale the maps dataset ready for training
 width = 128
 height = 768
