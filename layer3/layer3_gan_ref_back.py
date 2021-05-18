@@ -7,6 +7,7 @@ from keras.optimizers import Adam
 from keras.initializers import RandomNormal
 from keras.models import Model
 from keras.models import Input
+from keras.models import load_model
 from keras.layers import Conv2D
 from keras.layers import Conv2DTranspose, ZeroPadding2D
 from keras.layers import LeakyReLU
@@ -24,7 +25,6 @@ from keras.preprocessing.image import img_to_array
 from numpy import savez_compressed
 import torch
 from PIL import Image
-from keras.model import load_model
 
 # load, split and scale the maps dataset ready for training
 width = 128
