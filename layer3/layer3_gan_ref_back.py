@@ -293,7 +293,7 @@ def train(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
 			summarize_performance(i, g_model, dataset)
 
 # load image data
-dataset = load_real_samples('../maps_ref_back.npz')
+dataset = load_real_samples('../../maps_ref_back.npz')
 print('Loaded', dataset[0].shape, dataset[1].shape)
 # define input shape based on the loaded dataset
 image_shape = dataset[0].shape[1:]
@@ -307,7 +307,7 @@ gan_model = define_gan(g_model, d_model, image_shape)
 # train(d_model, g_model, gan_model, dataset)
 
 #predict results
-model = load_model('../models_3/model_ref_back.h5')
+model = load_model('../../models_3/model_ref_back.h5')
 print(dataset[0][0].shape)
 # result = model.predict(dataset[0][0])
 # result = Image.fromarray(result)
