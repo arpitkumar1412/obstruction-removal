@@ -17,12 +17,14 @@ from keras.layers import Dropout
 from keras.layers import BatchNormalization
 from keras.layers import LeakyReLU
 from keras.preprocessing.image import load_img
+from keras.preprocessing.image import img_to_array
 from matplotlib import pyplot
 from os import listdir
 import numpy as np
 from numpy import asarray
 from numpy import vstack
-from keras.preprocessing.image import img_to_array
+from numpy import load
+from numpy import expand_dims
 from numpy import savez_compressed
 import torch
 from PIL import Image
