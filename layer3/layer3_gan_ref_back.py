@@ -308,3 +308,5 @@ gan_model = define_gan(g_model, d_model, image_shape)
 #predict results
 model = keras.models.load_model('model_ref_back.h5')
 result = model.predict(dataset[0][0])
+result = Image.fromarray(result)
+result.save('prediction.png')
