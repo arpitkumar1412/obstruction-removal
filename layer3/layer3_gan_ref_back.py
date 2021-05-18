@@ -311,10 +311,9 @@ gan_model = define_gan(g_model, d_model, image_shape)
 #predict results
 model = load_model('../../models_3/model_ref_back.h5')
 # print(dataset[0][0].shape)
-pyplot.imshow(dataset[0][0])
 filename1 = 'test_input_ref_back.png'
-pyplot.savefig(filename1)
-pyplot.close()
+img = Image.fromarray(dataset[0][0].astype(np.uint8))
+img.save(filename1)
 img = load_img('test_input_ref_back.png')
 print(img.size)
 result = model.predict(img)
