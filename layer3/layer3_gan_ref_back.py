@@ -16,6 +16,7 @@ from keras.layers import Concatenate
 from keras.layers import Dropout
 from keras.layers import BatchNormalization
 from keras.layers import LeakyReLU
+from keras.preprocessing import load_img
 from matplotlib import pyplot
 from os import listdir
 import numpy as np
@@ -25,7 +26,6 @@ from keras.preprocessing.image import img_to_array
 from numpy import savez_compressed
 import torch
 from PIL import Image
-import cv2
 
 # load, split and scale the maps dataset ready for training
 width = 128
@@ -314,7 +314,7 @@ pyplot.imshow(dataset[0][0])
 filename1 = 'test_input_ref_back.png'
 pyplot.savefig(filename1)
 pyplot.close()
-img = cv2.imread('test_input_ref_back.png')
+img = load_img('test_input_ref_back.png')
 print(img.size)
 result = model.predict(img)
 # result = Image.fromarray(result)
