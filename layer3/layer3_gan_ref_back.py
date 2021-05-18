@@ -25,6 +25,7 @@ from keras.preprocessing.image import img_to_array
 from numpy import savez_compressed
 import torch
 from PIL import Image
+import cv2
 
 # load, split and scale the maps dataset ready for training
 width = 128
@@ -309,7 +310,11 @@ gan_model = define_gan(g_model, d_model, image_shape)
 #predict results
 model = load_model('../../models_3/model_ref_back.h5')
 # print(dataset[0][0].shape)
-img = Image.fromarray(dataset[0][0].astype(np.uint8))
+pyplot.imshow(dataset[0][0])
+filename1 = 'test_input_ref_back.png'
+pyplot.savefig(filename1)
+pyplot.close()
+img = cv2.imread('test_input_ref_back.png')
 print(img.size)
 result = model.predict(img)
 # result = Image.fromarray(result)
