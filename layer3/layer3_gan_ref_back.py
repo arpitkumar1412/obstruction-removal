@@ -308,7 +308,8 @@ gan_model = define_gan(g_model, d_model, image_shape)
 
 #predict results
 model = load_model('../../models_3/model_ref_back.h5')
-print(dataset[0][0].shape)
-# result = model.predict(dataset[0][0])
+# print(dataset[0][0].shape)
+img = Image.fromarray(dataset[0][0])
+result = model.predict(dataset[0][0])
 # result = Image.fromarray(result)
 # result.save('prediction.png')
