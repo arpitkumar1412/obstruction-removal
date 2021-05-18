@@ -308,13 +308,25 @@ gan_model = define_gan(g_model, d_model, image_shape)
 # train model
 # train(d_model, g_model, gan_model, dataset)
 
+# load an image
+def load_image(filename, size=(width,height)):
+	# load image with the preferred size
+	pixels = load_img(filename, target_size=size)
+	# convert to numpy array
+	pixels = img_to_array(pixels)
+	# scale from [0,255] to [-1,1]
+	pixels = (pixels - 127.5) / 127.5
+	# reshape to 1 sample
+	pixels = expand_dims(pixels, 0)
+	return pixels
+
 #predict results
 model = load_model('../../models_3/model_ref_back.h5')
 # print(dataset[0][0].shape)
 filename1 = 'test_input_ref_back.png'
 img = Image.fromarray(dataset[0][0].astype(np.uint8))
 img.save(filename1)
-img = load_img('test_input_ref_back.png')
+img = load_image('test_input_ref_back.png')
 print(img.size)
 result = model.predict(img)
 # result = Image.fromarray(result)
