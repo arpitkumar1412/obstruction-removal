@@ -16,7 +16,7 @@ from keras.layers import Concatenate
 from keras.layers import Dropout
 from keras.layers import BatchNormalization
 from keras.layers import LeakyReLU
-from keras.preprocessing import load_img
+from keras.preprocessing.image import load_img
 from matplotlib import pyplot
 from os import listdir
 import numpy as np
