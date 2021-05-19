@@ -375,9 +375,9 @@ model = load_model('../models_3/model_ref_back.h5', compile=False)
 pred_back = np.squeeze(yhat_back.detach().numpy())
 print(pred_back.shape)
 pred_back = combine_images(pred_back)
-img = Image.fromarray(pred_back.astype(np.uint8))
-pixels = img_to_array(pixels)
-pixels = (pixels - 127.5) / 127.5
+# img = Image.fromarray(pred_back.astype(np.uint8))
+# pixels = img_to_array(pixels)
+pixels = (pred_back - 127.5) / 127.5
 img = expand_dims(pixels, 0)
 print(img.size)
 result = model.predict(img)
