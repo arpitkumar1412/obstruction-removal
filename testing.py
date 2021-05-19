@@ -323,6 +323,7 @@ pred_obs = np.asarray(tf.squeeze(obs(tf.expand_dims(inp[i], axis=0))), dtype=np.
 flo_back = get_flow_ini(pred_back)
 flo_obs = get_flow_ini(pred_obs)
 
+layers=4
 for l in range(layers):
     # print("layer: "+str(l))
     out5_b = torch.cat([out5, convert_pred(pred_back, (1,512,8,24,1))], 3)    #setting inputs for background decoder
