@@ -371,17 +371,17 @@ for l in range(layers):
     pred_obs = np.squeeze(pred_obs.detach().numpy())
 
 #predict results
-model = load_model('../models_3/model_ref_back.h5')
+model = load_model('../models_3/model_ref_back.h5', compile=False)
 pred_back = np.squeeze(yhat_back.detach().numpy())
 print(pred_back.shape)
 pred_back = combine_images(pred_back)
 img = Image.fromarray(pred_back.astype(np.uint8))
-# pixels = img_to_array(pixels)
-# pixels = (pixels - 127.5) / 127.5
-# img = expand_dims(pixels, 0)
-# print(img.size)
-# result = model.predict(img)
-# result = (result + 1) / 2.0
-# print(result[0].shape)
-# result = Image.fromarray(result[0].astype(np.uint8))
-# result.save('prediction.png')
+pixels = img_to_array(pixels)
+pixels = (pixels - 127.5) / 127.5
+img = expand_dims(pixels, 0)
+print(img.size)
+result = model.predict(img)
+result = (result + 1) / 2.0
+print(result[0].shape)
+result = Image.fromarray(result[0].astype(np.uint8))
+result.save('prediction.png')
