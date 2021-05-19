@@ -91,7 +91,7 @@ def combine_images(data):
     combined_item = np.zeros((prod_width*6,prod_height,3), dtype=np.uint8)
     frames=6
     for j in range(frames):
-        pixels = Image.fromarray(data[i,j,:,:,:])
+        pixels = Image.fromarray(data[j,:,:,:])
         pixels = pixels.resize((prod_height,prod_width))
         pixels = img_to_array(pixels)
         combined_item[prod_width*j:prod_width*(j+1),:,:] = pixels
