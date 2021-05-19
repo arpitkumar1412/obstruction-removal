@@ -362,13 +362,14 @@ for l in range(layers):
 
 #predict results
 model = load_model('../models_3/model_ref_back.h5')
-img = Image.fromarray(pred_back)
-pixels = img_to_array(pixels)
-pixels = (pixels - 127.5) / 127.5
-img = expand_dims(pixels, 0)
-print(img.size)
-result = model.predict(img)
-result = (result + 1) / 2.0
-print(result[0].shape)
-result = Image.fromarray(result[0].astype(np.uint8))
-result.save('prediction.png')
+print(pred_back.shape)
+# img = Image.fromarray(pred_back)
+# pixels = img_to_array(pixels)
+# pixels = (pixels - 127.5) / 127.5
+# img = expand_dims(pixels, 0)
+# print(img.size)
+# result = model.predict(img)
+# result = (result + 1) / 2.0
+# print(result[0].shape)
+# result = Image.fromarray(result[0].astype(np.uint8))
+# result.save('prediction.png')
