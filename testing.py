@@ -87,6 +87,16 @@ def get_flow(vid):
     flow_val[0,j,:,:,:] = transforms.ToTensor()(flo).permute(1,2,0).float()
     return flow_val
 
+def combine_images(data):
+    combined_item = np.zeros((prod_width*6,prod_height,3), dtype=np.uint8)
+    frames=6
+    for j in range(frames):
+        pixels = Image.fromarray(data[i,j,:,:,:])
+        pixels = pixels.resize((prod_height,prod_width))
+        pixels = img_to_array(pixels)
+        combined_item[prod_width*j:prod_width*(j+1),:,:] = pixels
+    return combined_item
+
 back = load_model('../models/back_ref.hdf5')
 obs = load_model('../models/obs_ref.hdf5')
 print("models loaded")
@@ -364,6 +374,7 @@ for l in range(layers):
 model = load_model('../models_3/model_ref_back.h5')
 pred_back = np.squeeze(yhat_back.detach().numpy())
 print(pred_back.shape)
+pred_back = combine_images(pred_back)
 img = Image.fromarray(pred_back.astype(np.uint8))
 # pixels = img_to_array(pixels)
 # pixels = (pixels - 127.5) / 127.5
