@@ -91,8 +91,8 @@ back = load_model('../models/back_ref.hdf5')
 obs = load_model('../models/obs_ref.hdf5')
 print("models loaded")
 
-mixed = np.load('mixed.npy')[1000:2000,:,:,:,:]
-inp = np.load('inp.npy')[1000:2000,:,:,:,:]
+mixed = np.load('../data/mixed.npy')[1000:2000,:,:,:,:]
+inp = np.load('../data/inp.npy')[1000:2000,:,:,:,:]
 print("data loaded")
 
 TORCH_R2PLUS1D = "moabitcoin/ig65m-pytorch"  # From https://github.com/moabitcoin/ig65m-pytorch
