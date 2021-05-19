@@ -126,6 +126,186 @@ model_flow = model.module
 model_flow.to(DEVICE)
 model_flow.eval()
 
+class conv3d_bn(nn.Module):
+  def __init__(self, in_ch, out_ch, k=(1, 1, 1), s=(1, 1, 1), p=(0, 0, 0)):
+    super().__init__()
+    self.in_ch = in_ch
+    self.out_ch = out_ch
+    self.k = k
+    self.s = s
+    self.p = p
+    self.conv3d = nn.Sequential(
+        nn.Conv3d(self.in_ch,
+                  self.out_ch,
+                  kernel_size=self.k,
+                  stride=self.s,
+                  padding=self.p), nn.BatchNorm3d(self.out_ch),
+        nn.ReLU(inplace=True))
+
+  def forward(self, x):
+    return self.conv3d(x)
+
+
+class trans3d_bn(nn.Module):
+  def __init__(self, in_ch, out_ch=(64, 64), k=(1, 1, 1), s=(1, 1, 1), p=(0, 0, 0)):
+    super().__init__()
+    self.in_ch = in_ch
+    self.out_ch = out_ch
+    self.k = k
+    self.s = s
+    self.p = p
+    self.trans3d = nn.Sequential(
+        nn.ConvTranspose3d(self.in_ch,
+                           self.out_ch[0],
+                           kernel_size=self.k,
+                           stride=self.s,
+                           padding=self.p),
+        nn.BatchNorm3d(self.out_ch[0]),
+        nn.ReLU(inplace=True),
+        conv3d_bn(self.out_ch[0],
+                  self.out_ch[1],
+                  k=(3, 5, 3),
+                  s=(1, 1, 1),
+                  p=(1, 2, 1))  # default kernel_size = 2,4,4 or 4,4,4
+        )
+
+  def forward(self, x):
+    return self.trans3d(x)
+
+
+class Decoder(nn.Module):
+  def __init__(self, n_classes=1):
+    super().__init__()
+    self.n_classes = n_classes
+
+    """
+    5th layer
+    """
+    self.layer_5 = trans3d_bn(in_ch=512,
+                            out_ch=(128,128),
+                            k=(2, 5, 4),
+                            s=(2, 1, 2),
+                            p=(0, 1, 1))  # 64, 16, 14, 14
+    self.layer_4 = conv3d_bn(in_ch=256, out_ch=128, k=(2,2,1), p=(1,0,0))
+
+    """
+    4th layer
+    """
+    self.layer_54 = trans3d_bn(in_ch=256,
+                              out_ch=(128, 64),
+                              k=(3, 3, 4),
+                              s=(1, 1, 2),
+                              p=(1, 1, 1))  # 64, 32, 28, 28
+    self.layer_3 = conv3d_bn(in_ch=128, out_ch=64, s=(1,1,1), p=(0,2,0))
+
+    """
+    3rd layer
+    """
+    self.layer_543 = trans3d_bn(in_ch=128,
+                                out_ch=(64, 32),
+                                k=(4, 6, 4),
+                                s=(1, 2, 2),
+                                p=(1, 0, 1))  # 32, 32, 56, 56, default kernel_size = 4
+    self.layer_2 = conv3d_bn(in_ch=64, out_ch=32, s=(1, 1, 1), p=(0,18,0))
+
+    """
+    2nd layer
+    """
+    self.layer_5432 = trans3d_bn(in_ch=64,
+                                  out_ch=(32, 16),
+                                  k=(5, 4, 3),
+                                  s=(1, 1, 1),
+                                  p=(2, 0, 1))  # 32, 32, 112, 112, default kernel_size = 4
+    self.layer_1 = conv3d_bn(in_ch=64, out_ch=16, p=(0,18,0))
+
+    """
+    1st layer
+    """
+    self.final_2 = nn.ConvTranspose3d(64,32,
+                                    kernel_size=(1, 3, 3),
+                                    stride=(1, 1, 1),
+                                    padding=(0, 1, 1))  # 32, 64, 224, 224
+    self.final_1 = nn.ConvTranspose3d(32,16,
+                                    kernel_size=(1, 3, 3),
+                                    stride=(1, 1, 1),
+                                    padding=(0, 1, 1))  # 32, 64, 224, 224
+    self.final_0 = nn.ConvTranspose3d(16,8,
+                                    kernel_size=(1, 3, 3),
+                                    stride=(1, 1, 1),
+                                    padding=(0, 1, 1))  # 32, 64, 224, 224
+    self.out = nn.Conv3d(
+        8,7,
+        kernel_size=(3, 5, 5),
+        stride=(1, 1, 1),
+        padding=(1, 2, 2))  # n*3, 64, 224, 224, default kernel_size = 4,4,4
+
+
+  def forward(self, inputs):
+    """
+    init
+    """
+    inp_5 = inputs['inp_5']
+    inp_4 = inputs['inp_4']
+    inp_3 = inputs['inp_3']
+    inp_2 = inputs['inp_2']
+    inp_1 = inputs['inp_1']
+    """
+    layer 5
+    """
+    layer_5 = self.layer_5(inp_5)
+    # print("layer_5")
+    # print(layer_5.shape)
+    layer_4 = self.layer_4(inp_4)
+    # print("layer_4")
+    # print(layer_4.shape)
+    out_54 = torch.cat([layer_5, layer_4], 1)
+    # print("out_54")
+    # print(out_54.shape)
+    """
+    layer 4
+    """
+    layer_54 = self.layer_54(out_54)
+    # print("layer_54")
+    # print(layer_54.shape)
+    layer_3 = self.layer_3(inp_3)
+    # print("layer_3")
+    # print(layer_3.shape)
+    out_543 = torch.cat([layer_54, layer_3], 1)
+    # print("out_543")
+    # print(out_543.shape)
+    """
+    layer 3
+    """
+    layer_543 = self.layer_543(out_543)
+    # print("layer_543")
+    # print(layer_543.shape)
+    layer_2 = self.layer_2(inp_2)
+    # print("layer_2")
+    # print(layer_2.shape)
+    out_5432 = torch.cat([layer_543, layer_2], 1)
+    # print("out_5432")
+    # print(out_5432.shape)
+    """
+    layer 2
+    """
+    # layer_5432 = self.layer_5432(out_5432)
+    # print("layer_5432")
+    # print(layer_5432.shape)
+    # layer_1 = self.layer_1(inp_1)
+    # print("layer_1")
+    # print(layer_1.shape)
+    # out_54321 = torch.cat([layer_5432, layer_1], 1)
+    # print("out_54321")
+    # print(out_54321.shape)
+    """
+    output layer
+    """
+    final_2 = self.final_2(out_5432)
+    final_1 = self.final_1(final_2)
+    final_0 = self.final_0(final_1)
+    out = self.out(final_0)
+    return out
+
 decode_back = torch.load('../models_2/back-ref.pth')
 decode_obs = torch.load('../models_2/obs-ref.pth')
 
