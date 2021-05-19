@@ -331,6 +331,8 @@ img.save(filename1)
 img = load_image('test_input_ref_back.png')
 print(img.size)
 result = model.predict(img)
-print(result.shape)
+# scale from [-1,1] to [0,1]
+result = (result + 1) / 2.0
+print(result[0].shape)
 # result = Image.fromarray(result.astype(np.uint8))
 # result.save('prediction.png')
