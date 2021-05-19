@@ -334,5 +334,5 @@ result = model.predict(img)
 # scale from [-1,1] to [0,1]
 result = (result + 1) / 2.0
 print(result[0].shape)
-# result = Image.fromarray(result.astype(np.uint8))
-# result.save('prediction.png')
+result = Image.fromarray(result[0].astype(np.uint8))
+result.save('prediction.png')
