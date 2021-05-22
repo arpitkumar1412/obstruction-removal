@@ -13,45 +13,11 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 
-# mixed = np.zeros((1000,7,width,height,3))
-# inp = np.zeros((2500,6,3*width,height,3))
-# vid1 = np.zeros((2500,6,final_width,final_height,3))
-# vid2 = np.zeros((2500,6,final_width,final_height,3))
-
-inp = np.load('inp.npy')[0:1000,:,:,:]
-vid1 = np.load('vid1.npy')[0:1000,:,:,:]
-vid2 = np.load('vid2.npy')[0:1000,:,:,:]
+inp = np.load('../../data/fencing-inp.npy')
+vid1 = np.load('../../data/fencing-vid1.npy')
+vid2 = np.load('../../data/fencing-vid2.npy')
 print(inp.shape)
 print("loading inputs")
-# k = 0
-# loc = 'dataset/reflection-final/'
-# for j in os.listdir(loc):
-#   mixed_path = loc+j+'/mixed/'
-#   vid1_path = loc+j+'/vid1/'
-#   vid2_path = loc+j+'/vid2/'
-#
-#   i=0
-#   for mix in os.listdir(mixed_path):
-#     mixed[k,i,:,:] = np.asarray(Image.open(os.path.join(mixed_path, mix)).resize((height,width)), dtype="int32")
-#     i+=1
-#   i=0
-#   for back in os.listdir(vid1_path):
-#     vid1[k,i,:,:] = np.asarray(Image.open(os.path.join(vid1_path, back)).resize((final_height,final_width)), dtype="int32")
-#     i+=1
-#     if i==6:
-#       break;
-#   i=0
-#   for obs in os.listdir(vid2_path):
-#     vid2[k,i,:,:] = np.asarray(Image.open(os.path.join(vid2_path, obs)).resize((final_height,final_width)), dtype="int32")
-#     i+=1
-#     if i==6:
-#       break;
-#   k+=1
-#   print(k)
-# #
-# np.save('reflection-mixed.npy', mixed)
-# np.save('reflection-vid1.npy', vid1)
-# np.save('reflection-vid2.npy', vid2)
 
 def feature_extractor_and_layer_flow_estimator():
   model = tf.keras.Sequential()
@@ -114,19 +80,10 @@ def feature_extractor_and_layer_flow_estimator():
 #   return tf.convert_to_tensor(inp)
 # inp = cal_cost(mixed)
 # np.save('reflection-inp.npy', inp)
-# back = feature_extractor_and_layer_flow_estimator()
-# back.compile(loss='mse', optimizer='adam', metrics=['accuracy'])
-back = load_model("back_fen.hdf5")
+back = feature_extractor_and_layer_flow_estimator()
+back.compile(loss='mse', optimizer='adam', metrics=['accuracy'])
 X_train, X_test, y_train, y_test = train_test_split(inp, vid1, test_size=0.2, random_state=42)
 print(X_train.shape, y_train.shape)
-checkpoint = ModelCheckpoint("back_fen.hdf5", monitor='loss', verbose=1,save_best_only=True, mode='auto', period=10)
+checkpoint = ModelCheckpoint("../../models/back_fen.hdf5", monitor='loss', verbose=1,save_best_only=True, mode='auto', period=10)
 callbacks = [checkpoint]
 back.fit(X_train, y_train, batch_size=50, epochs=150, validation_data=(X_test, y_test), shuffle=True, callbacks=callbacks)
-
-# obs = feature_extractor_and_layer_flow_estimator()
-# obs.compile(loss='mse', optimizer='adam', metrics=['accuracy'])
-# X_train, X_test, y_train, y_test = train_test_split(inp, vid2, test_size=0.2, random_state=42)
-# print(X_train.shape, y_train.shape)
-# checkpoint = ModelCheckpoint("obs.hdf5", monitor='loss', verbose=1,save_best_only=True, mode='auto', period=50)
-# callbacks = [checkpoint]
-# obs.fit(X_train, y_train, batch_size=50, epochs=1000, validation_data=(X_test, y_test), shuffle=True, callbacks=callbacks)
