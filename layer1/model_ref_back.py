@@ -56,4 +56,4 @@ X_train, X_test, y_train, y_test = train_test_split(inp, vid1, test_size=0.2, ra
 print(X_train.shape, y_train.shape)
 checkpoint = ModelCheckpoint("../../models/back_ref.hdf5", monitor='loss', verbose=1,save_best_only=True, mode='auto', period=10)
 callbacks = [checkpoint]
-back.fit(X_train, y_train, batch_size=50, epochs=150, validation_data=(X_test, y_test), shuffle=True, callbacks=callbacks)
+back.fit(X_train, y_train, batch_size=50, epochs=20000, validation_data=(X_test, y_test), shuffle=True, callbacks=callbacks)
