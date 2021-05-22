@@ -11,12 +11,23 @@ def cal_cost(features):
   cost = np.zeros((1000, 6, width, height, 3))
   for i in range(features.shape[0]):
     for j in range(6):
-      flat_feature1 = mixed[i,j]
-      flat_feature2 = mixed[i,j+1]
+      flat_feature1 = mixed[i,j,:,:,0]
+      flat_feature2 = mixed[i,j+1,:,:,0]
       cost_vol = scipy.signal.correlate2d(flat_feature1, flat_feature2, mode='same')   #normalize here ############################
       img = np.reshape(cost_vol, (width, height))
       cost[i,j,:,:,0] = img
-    print(i)
+
+      flat_feature1 = mixed[i,j,:,:,1]
+      flat_feature2 = mixed[i,j+1,:,:,1]
+      cost_vol = scipy.signal.correlate2d(flat_feature1, flat_feature2, mode='same')   #normalize here ############################
+      img = np.reshape(cost_vol, (width, height))
+      cost[i,j,:,:,1] = img
+
+      flat_feature1 = mixed[i,j,:,:,1]
+      flat_feature2 = mixed[i,j+1,:,:,1]
+      cost_vol = scipy.signal.correlate2d(flat_feature1, flat_feature2, mode='same')   #normalize here ############################
+      img = np.reshape(cost_vol, (width, height))
+      cost[i,j,:,:,0] = img
 
   inp = np.zeros((1000, 6, 3*width, height, 3))
   for i in range(1000):
