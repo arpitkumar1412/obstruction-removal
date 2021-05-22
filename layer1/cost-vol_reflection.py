@@ -1,10 +1,14 @@
 import numpy as np
 import tensorflow as tf
 import scipy
+from scipy import signal
 
 mixed = np.load('../../data/reflection-mixed.npy')
 print(mixed.shape)
 print("loading inputs")
+
+width=64
+height=56
 
 def cal_cost(features):
   print("calculating cost")
