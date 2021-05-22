@@ -6,6 +6,9 @@ mixed = np.load('../../data/reflection-mixed.npy')
 print(mixed.shape)
 print("loading inputs")
 
+width=64
+height=56
+
 def cal_cost(features):
   print("calculating cost")
   cost = np.zeros((1000, 6, width, height, 3))
