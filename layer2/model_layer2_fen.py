@@ -118,7 +118,7 @@ from raft import RAFT
 from argparse import Namespace
 from utils import flow_viz
 from utils.utils import InputPadder
-args = Namespace(alternate_corr=False, mixed_precision=False, model='RAFT/raft-things.pth', small=False)
+args = Namespace(alternate_corr=False, mixed_precision=False, model='../../RAFT/raft-things.pth', small=False)
 model = torch.nn.DataParallel(RAFT(args))
 model.load_state_dict(torch.load(args.model))
 print("model-optical flow created")
