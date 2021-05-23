@@ -84,8 +84,8 @@ def get_flow(vid):
     flow_val[0,j] = transforms.ToTensor()(flo).permute(1,2,0).float()
     return flow_val
 
-back = load_model('models/back_fen.hdf5')
-obs = load_model('models/obs_fen.hdf5')
+back = load_model('../../models/back_fen.hdf5')
+obs = load_model('../..models/obs_fen.hdf5')
 print("models loaded")
 
 inp = np.load('../../data/fencing-inp.npy')
