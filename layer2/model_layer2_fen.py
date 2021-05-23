@@ -338,10 +338,11 @@ def train_model(layers, epochs):
             pred_back = decode_back(inputs_back)
             pred_obs = decode_obs(inputs_obs)
 
-            flo_back = np.squeeze(get_flow(pred_back.permute(0,1,4,3,2).cpu().detach().numpy()))
-            flo_obs = np.squeeze(get_flow(pred_obs.permute(0,1,4,3,2).cpu().detach().numpy()))
+            flo_back = np.squeeze(get_flow(pred_back.permute(0,1,4,3,2).detach().numpy()))
+            flo_obs = np.squeeze(get_flow(pred_obs.permute(0,1,4,3,2).detach().numpy()))
 
             flo_back_act = np.squeeze(get_flow(convert_actual(vid1[i]).float().detach().numpy()))
+            flo_obs_act = np.squeeze(get_flow(convert_actual(vid2[i]).float().detach().numpy()))
 
             pred_back = pred_back[:,:6]
             pred_obs = pred_obs[:,:6]
@@ -349,8 +350,8 @@ def train_model(layers, epochs):
             yhat_obs = pred_obs.permute(0,1,4,3,2)
 
             # calculate loss
-            loss_back = criterion(yhat_back, convert_actual(vid1[i]).float())
-            loss_obs = criterion(yhat_obs, convert_actual(vid2[i]).float())
+            loss_back = criterion(yhat_back, convert_actual(vid1[i]).float())+criterion(flo_back,flo_back_act)
+            loss_obs = criterion(yhat_obs, convert_actual(vid2[i]).float())+criterion(flo_back,flo_back_act)
             # credit assignment
             loss_back.backward(retain_graph=True)
             loss_obs.backward(retain_graph=True)
