@@ -289,84 +289,85 @@ def train_model(layers, epochs):
   optimizer_back = SGD(decode_back.parameters(), lr=0.01, momentum=0.9)
   optimizer_obs = SGD(decode_obs.parameters(), lr=0.01, momentum=0.9)
 
-  # enumerate epochs
-  for epoch in range(epochs):
-    running_loss_back = 0
-    running_loss_obs = 0
-    # enumerate mini batches
-    batch = 0
-    for i in range(batch,batch+100):
-        batch = (batch+100)%1000
-    # clear the gradients
-        optimizer_back.zero_grad()
-        optimizer_obs.zero_grad()
-        # compute the model output
-        data = load_image(mixed[i,:6])    #prepare data for entry to encoder
-        out1 = model_encoder.stem(data)        #outputs of encoder model at various points
-        out2 = model_encoder.layer1(out1)
-        out3 = model_encoder.layer2(out2)
-        out4 = model_encoder.layer3(out3)
-        out5 = model_encoder.layer4(out4)
+   # enumerate epochs
+   for epoch in range(14,epochs):
+     running_loss_back = 0
+     running_loss_obs = 0
+     # enumerate mini batches
+     batch = 0
+     for i in range(batch,batch+100):
+     # clear the gradients
+         batch = (batch+100)%1000
+         optimizer_back.zero_grad()
+         optimizer_obs.zero_grad()
+         # compute the model output
+         data = load_image(mixed[i,:6])    #prepare data for entry to encoder
+         out1 = model_encoder.stem(data)        #outputs of encoder model at various points
+         out2 = model_encoder.layer1(out1)
+         out3 = model_encoder.layer2(out2)
+         out4 = model_encoder.layer3(out3)
+         out5 = model_encoder.layer4(out4)
 
-        pred_back = np.asarray(tf.squeeze(back(tf.expand_dims(inp[i], axis=0))), dtype=np.uint8)  #output from pre-trained model
-        pred_obs = np.asarray(tf.squeeze(obs(tf.expand_dims(inp[i], axis=0))), dtype=np.uint8)
-        flo_back = get_flow_ini(pred_back)
-        flo_obs = get_flow_ini(pred_obs)
+         pred_back = np.asarray(tf.squeeze(back(tf.expand_dims(inp[i], axis=0))), dtype=np.uint8)  #output from pre-trained model
+         pred_obs = np.asarray(tf.squeeze(obs(tf.expand_dims(inp[i], axis=0))), dtype=np.uint8)
+         flo_back = get_flow_ini(pred_back)
+         flo_obs = get_flow_ini(pred_obs)
 
-        for l in range(layers):
-            # print("layer: "+str(l))
-            out5_b = torch.cat([out5, convert_pred(pred_back, (1,512,8,24,1))], 3)    #setting inputs for background decoder
-            out4_b = torch.cat([out4, convert_pred(pred_obs, (1,256,16,24,1))], 3)
-            out3_b = torch.cat([out3, convert_pred(flo_back, (1,128,32,12,2))], 3)
+         flo_back_act = np.squeeze(get_flow(convert_actual(vid1[i]).float().detach().numpy()))
+         flo_obs_act = np.squeeze(get_flow(convert_actual(vid2[i]).float().detach().numpy()))
 
-            out5_o = torch.cat([out5, convert_pred(pred_obs, (1,512,8,24,1))], 3)     #setting inputs for obstruction decoder
-            out4_o = torch.cat([out4, convert_pred(pred_back, (1,256,16,24,1))], 3)
-            out3_o = torch.cat([out3, convert_pred(flo_obs, (1,128,32,12,2))], 3)
-            inputs_back = {'inp_5' : out5_b.permute(0,1,4,3,2),
-                      'inp_4' : out4_b.permute(0,1,4,3,2),
-                      'inp_3' : out3_b.permute(0,1,4,3,2),
-                      'inp_2' : out2.permute(0,1,4,3,2),
-                      'inp_1' : out1.permute(0,1,4,3,2)
-                    }
-            inputs_obs = {'inp_5' : out5_o.permute(0,1,4,3,2),
-                      'inp_4' : out4_o.permute(0,1,4,3,2),
-                      'inp_3' : out3_o.permute(0,1,4,3,2),
-                      'inp_2' : out2.permute(0,1,4,3,2),
-                      'inp_1' : out1.permute(0,1,4,3,2)
-                    }
+         for l in range(layers):
+             # print("layer: "+str(l))
+             out5_b = torch.cat([out5, convert_pred(pred_back, (1,512,8,24,1))], 3)    #setting inputs for background decoder
+             out4_b = torch.cat([out4, convert_pred(pred_obs, (1,256,16,24,1))], 3)
+             out3_b = torch.cat([out3, convert_pred(flo_back, (1,128,32,12,2))], 3)
 
-            pred_back = decode_back(inputs_back)
-            pred_obs = decode_obs(inputs_obs)
+             out5_o = torch.cat([out5, convert_pred(pred_obs, (1,512,8,24,1))], 3)     #setting inputs for obstruction decoder
+             out4_o = torch.cat([out4, convert_pred(pred_back, (1,256,16,24,1))], 3)
+             out3_o = torch.cat([out3, convert_pred(flo_obs, (1,128,32,12,2))], 3)
+             inputs_back = {'inp_5' : out5_b.permute(0,1,4,3,2),
+                       'inp_4' : out4_b.permute(0,1,4,3,2),
+                       'inp_3' : out3_b.permute(0,1,4,3,2),
+                       'inp_2' : out2.permute(0,1,4,3,2),
+                       'inp_1' : out1.permute(0,1,4,3,2)
+                     }
+             inputs_obs = {'inp_5' : out5_o.permute(0,1,4,3,2),
+                       'inp_4' : out4_o.permute(0,1,4,3,2),
+                       'inp_3' : out3_o.permute(0,1,4,3,2),
+                       'inp_2' : out2.permute(0,1,4,3,2),
+                       'inp_1' : out1.permute(0,1,4,3,2)
+                     }
 
-            flo_back = np.squeeze(get_flow(pred_back.permute(0,1,4,3,2).detach().numpy()))
-            flo_obs = np.squeeze(get_flow(pred_obs.permute(0,1,4,3,2).detach().numpy()))
+             pred_back = decode_back(inputs_back)
+             pred_obs = decode_obs(inputs_obs)
 
-            flo_back_act = np.squeeze(get_flow(convert_actual(vid1[i]).float().detach().numpy()))
-            flo_obs_act = np.squeeze(get_flow(convert_actual(vid2[i]).float().detach().numpy()))
+             flo_back = np.squeeze(get_flow(pred_back.permute(0,1,4,3,2).cpu().detach().numpy()))
+             flo_obs = np.squeeze(get_flow(pred_obs.permute(0,1,4,3,2).cpu().detach().numpy()))
 
-            pred_back = pred_back[:,:6]
-            pred_obs = pred_obs[:,:6]
-            yhat_back = pred_back.permute(0,1,4,3,2)
-            yhat_obs = pred_obs.permute(0,1,4,3,2)
+             pred_back = pred_back[:,:6]
+             pred_obs = pred_obs[:,:6]
+             if l!=layers-1:
+                 pred_back = np.squeeze(pred_back.detach().numpy())
+                 pred_obs = np.squeeze(pred_obs.detach().numpy())
 
-            # calculate loss
-            loss_back = criterion(yhat_back, convert_actual(vid1[i]).float())+criterion(torch.from_numpy(flo_back).float(),torch.from_numpy(flo_back_act).float())
-            loss_obs = criterion(yhat_obs, convert_actual(vid2[i]).float())+criterion(torch.from_numpy(flo_obs).float(),torch.from_numpy(flo_obs_act).float())
-            # credit assignment
-            loss_back.backward(retain_graph=True)
-            loss_obs.backward(retain_graph=True)
+         yhat_back = pred_back.permute(0,1,4,3,2)
+         yhat_obs = pred_obs.permute(0,1,4,3,2)
 
-            torch.nn.utils.clip_grad_norm_(decode_back.parameters(), 1.0)
-            torch.nn.utils.clip_grad_norm_(decode_obs.parameters(), 1.0)
-            running_loss_back += loss_back.item()
-            running_loss_obs += loss_obs.item()
-            # update model weights
-            optimizer_back.step()
-            optimizer_obs.step()
+         # calculate loss
+         loss_back = criterion(yhat_back, convert_actual(vid1[i]).float())+criterion(torch.from_numpy(flo_back).float(),torch.from_numpy(flo_back_act).float())
+         loss_obs = criterion(yhat_obs, convert_actual(vid2[i]).float())+criterion(torch.from_numpy(flo_obs).float(),torch.from_numpy(flo_obs_act).float())
+         # credit assignment
+         loss_back.backward(retain_graph=True)
+         loss_obs.backward(retain_graph=True)
 
-            pred_back = np.squeeze(pred_back.detach().numpy())
-            pred_obs = np.squeeze(pred_obs.detach().numpy())
-        print("fen, epoch - "+str(epoch)+", batch - "+str(i)+", running loss background - "+str(running_loss_back)+", running loss obstruction - "+str(running_loss_obs))
+         torch.nn.utils.clip_grad_norm_(decode_back.parameters(), 1.0)
+         torch.nn.utils.clip_grad_norm_(decode_obs.parameters(), 1.0)
+         running_loss_back += loss_back.item()
+         running_loss_obs += loss_obs.item()
+         # update model weights
+         optimizer_back.step()
+         optimizer_obs.step()
+         print("fen, epoch - "+str(epoch)+", batch - "+str(i)+", running loss background - "+str(running_loss_back)+", running loss obstruction - "+str(running_loss_obs))
 
     if(epoch%5==0):
         torch.save(decode_back, '../../models_2/back-fen.pth')
