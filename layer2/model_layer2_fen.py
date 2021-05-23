@@ -350,7 +350,7 @@ def train_model(layers, epochs):
             yhat_obs = pred_obs.permute(0,1,4,3,2)
 
             # calculate loss
-            loss_back = criterion(yhat_back, convert_actual(vid1[i]).float())+criterion(torch.from_numpy(flo_back),torch.from_numpy(flo_back_act))
+            loss_back = criterion(yhat_back, convert_actual(vid1[i]).float())+criterion(torch.from_numpy(flo_back).float(),torch.from_numpy(flo_back_act).float())
             loss_obs = criterion(yhat_obs, convert_actual(vid2[i]).float())#+criterion(flo_back,flo_back_act)
             # credit assignment
             loss_back.backward(retain_graph=True)
