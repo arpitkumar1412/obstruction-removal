@@ -351,7 +351,7 @@ def train_model(layers, epochs):
 
             # calculate loss
             loss_back = criterion(yhat_back, convert_actual(vid1[i]).float())+criterion(torch.from_numpy(flo_back).float(),torch.from_numpy(flo_back_act).float())
-            loss_obs = criterion(yhat_obs, convert_actual(vid2[i]).float())#+criterion(flo_back,flo_back_act)
+            loss_obs = criterion(yhat_obs, convert_actual(vid2[i]).float())+criterion(torch.from_numpy(flo_obs).float(),torch.from_numpy(flo_obs_act).float())
             # credit assignment
             loss_back.backward(retain_graph=True)
             loss_obs.backward(retain_graph=True)
