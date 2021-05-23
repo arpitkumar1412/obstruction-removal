@@ -308,7 +308,6 @@ def train_model(layers, epochs):
         out4 = model_encoder.layer3(out3)
         out5 = model_encoder.layer4(out4)
 
-        print("calculating output for pretrained model")
         pred_back = np.asarray(tf.squeeze(back(tf.expand_dims(inp[i], axis=0))), dtype=np.uint8)  #output from pre-trained model
         pred_obs = np.asarray(tf.squeeze(obs(tf.expand_dims(inp[i], axis=0))), dtype=np.uint8)
         flo_back = get_flow_ini(pred_back)
