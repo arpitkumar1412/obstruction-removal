@@ -366,7 +366,7 @@ def train_model(layers, epochs):
 
             pred_back = np.squeeze(pred_back.detach().numpy())
             pred_obs = np.squeeze(pred_obs.detach().numpy())
-        print("epoch - "+str(epoch)+", batch - "+str(i)+", running loss background - "+str(running_loss_back)+", running loss obstruction - "+str(running_loss_obs))
+        print("fen, epoch - "+str(epoch)+", batch - "+str(i)+", running loss background - "+str(running_loss_back)+", running loss obstruction - "+str(running_loss_obs))
 
     if(epoch%5==0):
         torch.save(decode_back, '../../models_2/back-fen.pth')
