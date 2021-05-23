@@ -370,6 +370,6 @@ def train_model(layers, epochs):
             print("fen, epoch - "+str(epoch)+", batch - "+str(i)+", running loss background - "+str(running_loss_back)+", running loss obstruction - "+str(running_loss_obs))
 
         if(epoch%5==0):
-        torch.save(decode_back, '../../models_2/back-fen.pth')
-        torch.save(decode_obs, '../../models_2/obs-fen.pth')
-        train_model(6,20000)
+            torch.save(decode_back, '../../models_2/back-fen.pth')
+            torch.save(decode_obs, '../../models_2/obs-fen.pth')
+train_model(6,20000)
