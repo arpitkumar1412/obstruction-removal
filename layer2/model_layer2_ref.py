@@ -26,7 +26,7 @@ DEVICE='cuda'
 def convert_pred(vid, shape):
   edit_vid = np.zeros((6,128,128,1), dtype=np.uint8)
   for i in range(vid.shape[0]):
-    img = Image.fromarray(vid[i,:,:,:], 'RGB').convert('L')
+    img = Image.fromarray(vid[i], 'RGB').convert('L')
     img = img.resize((128,128))
     edit_vid[i,:,:,0] = img
 
@@ -36,9 +36,9 @@ def convert_pred(vid, shape):
 def convert_actual(vid):
   edit_vid = np.zeros((1,6,64,64,3), dtype=np.uint8)
   for i in range(vid.shape[0]):
-    img = Image.fromarray(vid[i,:,:,:])
+    img = Image.fromarray(vid[i])
     img = img.resize((64,64))
-    edit_vid[0,i,:,:,:] = img
+    edit_vid[0,i] = img
 
   edit_vid = torch.from_numpy(edit_vid)
   return edit_vid
@@ -55,8 +55,8 @@ def load_image(img):
 def get_flow_ini(vid):
   flow_val = np.zeros((6,64,64,3), dtype=np.uint8)
   for j in range(5):
-    image1 = load_img(vid[j,:,:,:])
-    image2 = load_img(vid[j+1,:,:,:])
+    image1 = load_img(vid[j])
+    image2 = load_img(vid[j+1)
     padder = InputPadder(image1.shape)
     image1, image2 = padder.pad(image1, image2)
     flow_low, flow_up = model_flow(image1, image2, iters=4, test_mode=True)
@@ -65,14 +65,14 @@ def get_flow_ini(vid):
     flo = flow_up[0].permute(1,2,0).cpu().detach().numpy()
     flo = flow_viz.flow_to_image(flo)
     flo = Image.fromarray(flo).resize((64,64))
-    flow_val[j,:,:,:] = transforms.ToTensor()(flo).permute(1,2,0).float()
+    flow_val[j] = transforms.ToTensor()(flo).permute(1,2,0).float()
     return flow_val
 
 def get_flow(vid):
   flow_val = np.zeros((1,6,64,64,3), dtype=np.uint8)
   for j in range(6):
-    image1 = load_img(vid[0,j,:,:,:])
-    image2 = load_img(vid[0,j+1,:,:,:])
+    image1 = load_img(vid[0,j])
+    image2 = load_img(vid[0,j+1])
     padder = InputPadder(image1.shape)
     image1, image2 = padder.pad(image1, image2)
     flow_low, flow_up = model_flow(image1, image2, iters=4, test_mode=True)
@@ -81,18 +81,19 @@ def get_flow(vid):
     flo = flow_up[0].permute(1,2,0).cpu().detach().numpy()
     flo = flow_viz.flow_to_image(flo)
     flo = Image.fromarray(flo).resize((64,64))
-    flow_val[0,j,:,:,:] = transforms.ToTensor()(flo).permute(1,2,0).float()
+    flow_val[0,j] = transforms.ToTensor()(flo).permute(1,2,0).float()
     return flow_val
 
-back = load_model('models/back_ref.hdf5')
-obs = load_model('models/obs_ref.hdf5')
+back = load_model('../../models/back_ref.hdf5')
+obs = load_model('../../models/obs_ref.hdf5')
 print("models loaded")
 
-mixed = np.load('mixed.npy')[1000:2000,:,:,:,:]
-vid1 = np.load('vid1.npy')[1000:2000,:,:,:,:]
-vid2 = np.load('reflection-vid2.npy')
-inp = np.load('inp.npy')[1000:2000,:,:,:,:]
-print("data loaded")
+inp = np.load('../../data/reflection-inp.npy')
+vid1 = np.load('../../data/reflection-vid1.npy')
+vid2 = np.load('../../data/reflection-vid2.npy')
+mixed = np.load('../../data/reflection-mixed.npy')
+print(inp.shape)
+print("loading inputs")
 
 TORCH_R2PLUS1D = "moabitcoin/ig65m-pytorch"  # From https://github.com/moabitcoin/ig65m-pytorch
 MODELS = {
@@ -112,12 +113,12 @@ model_encoder = torch.hub.load(
         )
 print("encoder model created")
 
-sys.path.append('RAFT/core/')
+sys.path.append('../../RAFT/core/')
 from raft import RAFT
 from argparse import Namespace
 from utils import flow_viz
 from utils.utils import InputPadder
-args = Namespace(alternate_corr=False, mixed_precision=False, model='RAFT/raft-things.pth', small=False)
+args = Namespace(alternate_corr=False, mixed_precision=False, model='../../RAFT/raft-things.pth', small=False)
 model = torch.nn.DataParallel(RAFT(args))
 model.load_state_dict(torch.load(args.model))
 print("model-optical flow created")
@@ -252,50 +253,21 @@ class Decoder(nn.Module):
     layer 5
     """
     layer_5 = self.layer_5(inp_5)
-    # print("layer_5")
-    # print(layer_5.shape)
     layer_4 = self.layer_4(inp_4)
-    # print("layer_4")
-    # print(layer_4.shape)
     out_54 = torch.cat([layer_5, layer_4], 1)
-    # print("out_54")
-    # print(out_54.shape)
     """
     layer 4
     """
     layer_54 = self.layer_54(out_54)
-    # print("layer_54")
-    # print(layer_54.shape)
     layer_3 = self.layer_3(inp_3)
-    # print("layer_3")
-    # print(layer_3.shape)
     out_543 = torch.cat([layer_54, layer_3], 1)
-    # print("out_543")
-    # print(out_543.shape)
     """
     layer 3
     """
     layer_543 = self.layer_543(out_543)
-    # print("layer_543")
-    # print(layer_543.shape)
     layer_2 = self.layer_2(inp_2)
-    # print("layer_2")
-    # print(layer_2.shape)
     out_5432 = torch.cat([layer_543, layer_2], 1)
-    # print("out_5432")
-    # print(out_5432.shape)
-    """
-    layer 2
-    """
-    # layer_5432 = self.layer_5432(out_5432)
-    # print("layer_5432")
-    # print(layer_5432.shape)
-    # layer_1 = self.layer_1(inp_1)
-    # print("layer_1")
-    # print(layer_1.shape)
-    # out_54321 = torch.cat([layer_5432, layer_1], 1)
-    # print("out_54321")
-    # print(out_54321.shape)
+
     """
     output layer
     """
@@ -309,10 +281,10 @@ class Decoder(nn.Module):
 # train the model   background
 def train_model(layers, epochs):
   # define the optimization
-  # decode_back = Decoder(1)    #defining the model
-  # decode_obs = Decoder(1)
-  decode_back = torch.load('back-ref.pth')
-  decode_obs = torch.load('obs-ref.pth')
+  decode_back = Decoder(1)    #defining the model
+  decode_obs = Decoder(1)
+  # decode_back = torch.load('back-ref.pth')
+  # decode_obs = torch.load('obs-ref.pth')
   criterion = MSELoss()
   optimizer_back = SGD(decode_back.parameters(), lr=0.01, momentum=0.9)
   optimizer_obs = SGD(decode_obs.parameters(), lr=0.01, momentum=0.9)
@@ -322,12 +294,14 @@ def train_model(layers, epochs):
     running_loss_back = 0
     running_loss_obs = 0
     # enumerate mini batches
-    for i in range(1000):
+    batch = 0
+    for i in range(batch,batch+100):
     # clear the gradients
+        batch = (batch+100)%1000
         optimizer_back.zero_grad()
         optimizer_obs.zero_grad()
         # compute the model output
-        data = load_image(mixed[i,:6,:,:,:])    #prepare data for entry to encoder
+        data = load_image(mixed[i,:6])    #prepare data for entry to encoder
         out1 = model_encoder.stem(data)        #outputs of encoder model at various points
         out2 = model_encoder.layer1(out1)
         out3 = model_encoder.layer2(out2)
@@ -368,8 +342,8 @@ def train_model(layers, epochs):
             flo_back = np.squeeze(get_flow(pred_back.permute(0,1,4,3,2).cpu().detach().numpy()))
             flo_obs = np.squeeze(get_flow(pred_obs.permute(0,1,4,3,2).cpu().detach().numpy()))
 
-            pred_back = pred_back[:,:6,:,:,:]
-            pred_obs = pred_obs[:,:6,:,:,:]
+            pred_back = pred_back[:,:6]
+            pred_obs = pred_obs[:,:6]
             yhat_back = pred_back.permute(0,1,4,3,2)
             yhat_obs = pred_obs.permute(0,1,4,3,2)
 
@@ -393,6 +367,6 @@ def train_model(layers, epochs):
         print("ref, epoch - "+str(epoch)+", batch - "+str(i)+", running loss background - "+str(running_loss_back)+", running loss obstruction - "+str(running_loss_obs))
 
     if(epoch%1==0):
-        torch.save(decode_back, 'back-ref.pth')
-        torch.save(decode_obs, 'obs-ref.pth')
+        torch.save(decode_back, '../../models_2/back-ref.pth')
+        torch.save(decode_obs, '../../models_2/obs-ref.pth')
 train_model(4,150)
