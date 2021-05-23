@@ -59,5 +59,5 @@ def feature_extractor_and_layer_flow_estimator():
 # back.fit(X_train, y_train, batch_size=50, epochs=20000, validation_data=(X_test, y_test), shuffle=True, callbacks=callbacks)
 back = tf.keras.models.load_model('../../models/back_fen.hdf5')
 print(inp[0].shape)
-out = back.predict(inp[0])
-print(out.shape)
+# out = back.predict(inp[0])
+# print(out.shape)
