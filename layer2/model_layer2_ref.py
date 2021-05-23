@@ -281,10 +281,10 @@ class Decoder(nn.Module):
 # train the model   background
 def train_model(layers, epochs):
   # define the optimization
-  decode_back = Decoder(1)    #defining the model
-  decode_obs = Decoder(1)
-  # decode_back = torch.load('back-ref.pth')
-  # decode_obs = torch.load('obs-ref.pth')
+  # decode_back = Decoder(1)    #defining the model
+  # decode_obs = Decoder(1)
+  decode_back = torch.load('../../models_2/back-ref.pth')
+  decode_obs = torch.load('../../models_2/obs-ref.pth')
   criterion = MSELoss()
   optimizer_back = SGD(decode_back.parameters(), lr=0.01, momentum=0.9)
   optimizer_obs = SGD(decode_obs.parameters(), lr=0.01, momentum=0.9)
