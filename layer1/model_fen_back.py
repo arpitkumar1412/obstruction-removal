@@ -50,10 +50,12 @@ def feature_extractor_and_layer_flow_estimator():
   model.add(tf.keras.layers.Reshape((6, final_width, final_height, final_channels)))
   return model
 
-back = feature_extractor_and_layer_flow_estimator()
-back.compile(loss='mse', optimizer='adam', metrics=['accuracy'])
-X_train, X_test, y_train, y_test = train_test_split(inp, vid1, test_size=0.2, random_state=42)
-print(X_train.shape, y_train.shape)
-checkpoint = ModelCheckpoint("../../models/back_fen.hdf5", monitor='loss', verbose=1,save_best_only=True, mode='auto', period=10)
-callbacks = [checkpoint]
-back.fit(X_train, y_train, batch_size=50, epochs=20000, validation_data=(X_test, y_test), shuffle=True, callbacks=callbacks)
+# back = feature_extractor_and_layer_flow_estimator()
+# back.compile(loss='mse', optimizer='adam', metrics=['accuracy'])
+# X_train, X_test, y_train, y_test = train_test_split(inp, vid1, test_size=0.2, random_state=42)
+# print(X_train.shape, y_train.shape)
+# checkpoint = ModelCheckpoint("../../models/back_fen.hdf5", monitor='loss', verbose=1,save_best_only=True, mode='auto', period=10)
+# callbacks = [checkpoint]
+# back.fit(X_train, y_train, batch_size=50, epochs=20000, validation_data=(X_test, y_test), shuffle=True, callbacks=callbacks)
+back = model.load('../../models/back_fen.hdf5')
+out = back.predict(inp[0])
