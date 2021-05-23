@@ -56,7 +56,7 @@ def get_flow_ini(vid):
   flow_val = np.zeros((6,64,64,3), dtype=np.uint8)
   for j in range(5):
     image1 = load_img(vid[j])
-    image2 = load_img(vid[j+1)
+    image2 = load_img(vid[j+1])
     padder = InputPadder(image1.shape)
     image1, image2 = padder.pad(image1, image2)
     flow_low, flow_up = model_flow(image1, image2, iters=4, test_mode=True)
