@@ -294,7 +294,9 @@ def train_model(layers, epochs):
     running_loss_back = 0
     running_loss_obs = 0
     # enumerate mini batches
-    for i in range(100):
+    batch = 0
+    for i in range(batch,batch+100):
+        batch = (batch+100)%1000
     # clear the gradients
         optimizer_back.zero_grad()
         optimizer_obs.zero_grad()
