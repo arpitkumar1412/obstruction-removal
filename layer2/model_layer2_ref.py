@@ -314,6 +314,9 @@ def train_model(layers, epochs):
         flo_back = get_flow_ini(pred_back)
         flo_obs = get_flow_ini(pred_obs)
 
+        flo_back_act = np.squeeze(get_flow(convert_actual(vid1[i]).float().detach().numpy()))
+        flo_obs_act = np.squeeze(get_flow(convert_actual(vid2[i]).float().detach().numpy()))
+
         for l in range(layers):
             # print("layer: "+str(l))
             out5_b = torch.cat([out5, convert_pred(pred_back, (1,512,8,24,1))], 3)    #setting inputs for background decoder
@@ -342,32 +345,30 @@ def train_model(layers, epochs):
             flo_back = np.squeeze(get_flow(pred_back.permute(0,1,4,3,2).cpu().detach().numpy()))
             flo_obs = np.squeeze(get_flow(pred_obs.permute(0,1,4,3,2).cpu().detach().numpy()))
 
-            flo_back_act = np.squeeze(get_flow(convert_actual(vid1[i]).float().detach().numpy()))
-            flo_obs_act = np.squeeze(get_flow(convert_actual(vid2[i]).float().detach().numpy()))
-
             pred_back = pred_back[:,:6]
             pred_obs = pred_obs[:,:6]
-            yhat_back = pred_back.permute(0,1,4,3,2)
-            yhat_obs = pred_obs.permute(0,1,4,3,2)
+            if l!=layers-1:
+                pred_back = np.squeeze(pred_back.detach().numpy())
+                pred_obs = np.squeeze(pred_obs.detach().numpy())
 
-            # calculate loss
-            # calculate loss
-            loss_back = criterion(yhat_back, convert_actual(vid1[i]).float())+criterion(torch.from_numpy(flo_back).float(),torch.from_numpy(flo_back_act).float())
-            loss_obs = criterion(yhat_obs, convert_actual(vid2[i]).float())+criterion(torch.from_numpy(flo_obs).float(),torch.from_numpy(flo_obs_act).float())
-            # credit assignment
-            loss_back.backward(retain_graph=True)
-            loss_obs.backward(retain_graph=True)
+        yhat_back = pred_back.permute(0,1,4,3,2)
+        yhat_obs = pred_obs.permute(0,1,4,3,2)
 
-            torch.nn.utils.clip_grad_norm_(decode_back.parameters(), 1.0)
-            torch.nn.utils.clip_grad_norm_(decode_obs.parameters(), 1.0)
-            running_loss_back += loss_back.item()
-            running_loss_obs += loss_obs.item()
-            # update model weights
-            optimizer_back.step()
-            optimizer_obs.step()
+        # calculate loss
+        loss_back = criterion(yhat_back, convert_actual(vid1[i]).float())+criterion(torch.from_numpy(flo_back).float(),torch.from_numpy(flo_back_act).float())
+        loss_obs = criterion(yhat_obs, convert_actual(vid2[i]).float())+criterion(torch.from_numpy(flo_obs).float(),torch.from_numpy(flo_obs_act).float())
+        # credit assignment
+        loss_back.backward(retain_graph=True)
+        loss_obs.backward(retain_graph=True)
 
-            pred_back = np.squeeze(pred_back.detach().numpy())
-            pred_obs = np.squeeze(pred_obs.detach().numpy())
+        torch.nn.utils.clip_grad_norm_(decode_back.parameters(), 1.0)
+        torch.nn.utils.clip_grad_norm_(decode_obs.parameters(), 1.0)
+        running_loss_back += loss_back.item()
+        running_loss_obs += loss_obs.item()
+        # update model weights
+        optimizer_back.step()
+        optimizer_obs.step()
+
         print("ref, epoch - "+str(epoch)+", batch - "+str(i)+", running loss background - "+str(running_loss_back)+", running loss obstruction - "+str(running_loss_obs))
 
     if(epoch%1==0):
