@@ -113,7 +113,7 @@ model_encoder = torch.hub.load(
         )
 print("encoder model created")
 
-sys.path.append('RAFT/core/')
+sys.path.append('../../RAFT/core/')
 from raft import RAFT
 from argparse import Namespace
 from utils import flow_viz
