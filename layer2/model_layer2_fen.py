@@ -290,7 +290,7 @@ def train_model(layers, epochs):
   optimizer_obs = SGD(decode_obs.parameters(), lr=0.01, momentum=0.9)
 
    # enumerate epochs
-   for epoch in range(14,epochs):
+   for epoch in range(12,epochs):
      running_loss_back = 0
      running_loss_obs = 0
      # enumerate mini batches
