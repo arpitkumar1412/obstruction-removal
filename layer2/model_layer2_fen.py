@@ -85,7 +85,7 @@ def get_flow(vid):
     return flow_val
 
 back = load_model('../../models/back_fen.hdf5')
-obs = load_model('../..models/obs_fen.hdf5')
+obs = load_model('../../models/obs_fen.hdf5')
 print("models loaded")
 
 inp = np.load('../../data/fencing-inp.npy')
@@ -366,6 +366,6 @@ def train_model(layers, epochs):
         print("epoch - "+str(epoch)+", batch - "+str(i)+", running loss background - "+str(running_loss_back)+", running loss obstruction - "+str(running_loss_obs))
 
     if(epoch%5==0):
-        torch.save(decode_back, 'back-fen.pth')
-        torch.save(decode_obs, 'obs-fen.pth')
+        torch.save(decode_back, '../../models_2/back-fen.pth')
+        torch.save(decode_obs, '../../models_2/obs-fen.pth')
 train_model(4,150)
