@@ -369,4 +369,4 @@ def train_model(layers, epochs):
     if(epoch%1==0):
         torch.save(decode_back, '../../models_2/back-ref.pth')
         torch.save(decode_obs, '../../models_2/obs-ref.pth')
-train_model(4,150)
+train_model(6,20000)

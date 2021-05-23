@@ -341,6 +341,8 @@ def train_model(layers, epochs):
             flo_back = np.squeeze(get_flow(pred_back.permute(0,1,4,3,2).cpu().detach().numpy()))
             flo_obs = np.squeeze(get_flow(pred_obs.permute(0,1,4,3,2).cpu().detach().numpy()))
 
+            flo_back_act = np.squeeze(get_flow(convert_actual(vid1[i]).float()))
+
             pred_back = pred_back[:,:6]
             pred_obs = pred_obs[:,:6]
             yhat_back = pred_back.permute(0,1,4,3,2)
@@ -368,4 +370,4 @@ def train_model(layers, epochs):
     if(epoch%5==0):
         torch.save(decode_back, '../../models_2/back-fen.pth')
         torch.save(decode_obs, '../../models_2/obs-fen.pth')
-train_model(4,150)
+train_model(6,20000)
