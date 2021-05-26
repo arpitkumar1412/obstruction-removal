@@ -368,9 +368,11 @@ def train_model(layers, epochs):
             optimizer_back.step()
             optimizer_obs.step()
             print("fen, epoch - "+str(epoch)+", batch - "+str(i)+", running loss background - "+str(running_loss_back)+", running loss obstruction - "+str(running_loss_obs))
+            print('**********************************************************************************************************************************************************')
 
         if(epoch%5==0):
             print('saving fencing model, epoch-'+str(epoch))
             torch.save(decode_back, '../../models_2/back-fen.pth')
             torch.save(decode_obs, '../../models_2/obs-fen.pth')
+            print('********************************************')
 train_model(6,20000)

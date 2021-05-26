@@ -290,7 +290,7 @@ def train_model(layers, epochs):
   optimizer_obs = SGD(decode_obs.parameters(), lr=0.01, momentum=0.9)
 
   # enumerate epochs
-  for epoch in range(413,epochs):
+  for epoch in range(664,epochs):
     running_loss_back = 0
     running_loss_obs = 0
     # enumerate mini batches
@@ -369,9 +369,11 @@ def train_model(layers, epochs):
         optimizer_obs.step()
 
         print("ref, epoch - "+str(epoch)+", batch - "+str(i)+", running loss background - "+str(running_loss_back)+", running loss obstruction - "+str(running_loss_obs))
+        print('**********************************************************************************************************************************************************')
 
     if(epoch%5==0):
         print('saving reflection model, epoch-'+str(epoch))
         torch.save(decode_back, '../../models_2/back-ref.pth')
         torch.save(decode_obs, '../../models_2/obs-ref.pth')
+        print('********************************************')
 train_model(6,20000)
