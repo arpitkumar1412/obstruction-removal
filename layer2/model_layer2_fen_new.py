@@ -368,7 +368,7 @@ def train_model(layers, epochs):
         optimizer_back.step()
         optimizer_obs.step()
 
-        print("ref, epoch - "+str(epoch)+", batch - "+str(i)+", running loss background - "+str(running_loss_back)+", running loss obstruction - "+str(running_loss_obs))
+        print("fen, epoch - "+str(epoch)+", batch - "+str(i)+", running loss background - "+str(running_loss_back)+", running loss obstruction - "+str(running_loss_obs))
 
     print('**********************************************************************************************************************************************************')
     if(epoch%5==0):
