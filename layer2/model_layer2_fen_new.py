@@ -184,7 +184,7 @@ class Encoder_Decoder(nn.Module):
                     TORCH_R2PLUS1D,
                     model_name,
                     num_classes=MODELS[model_name],
-                    pretrained=True,
+                    pretrained=False,
                     )
     """
     5th layer

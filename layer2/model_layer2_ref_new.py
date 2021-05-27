@@ -105,14 +105,6 @@ MODELS = {
 }
 model_name = 'r2plus1d_34_8_kinetics'
 
-model_encoder = torch.hub.load(
-            TORCH_R2PLUS1D,
-            model_name,
-            num_classes=MODELS[model_name],
-            pretrained=True,
-        )
-print("encoder model created")
-
 sys.path.append('../../RAFT/core/')
 from raft import RAFT
 from argparse import Namespace
@@ -177,6 +169,16 @@ class Encoder_Decoder(nn.Module):
   def __init__(self, n_classes=1):
     super().__init__()
     self.n_classes = n_classes
+
+    """
+    encoder
+    """
+    self.encoder = torch.hub.load(
+                TORCH_R2PLUS1D,
+                model_name,
+                num_classes=MODELS[model_name],
+                pretrained=False,
+            )
 
     """
     5th layer
