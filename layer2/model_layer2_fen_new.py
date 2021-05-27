@@ -104,14 +104,13 @@ MODELS = {
     "r2plus1d_34_8_kinetics": 400,
 }
 model_name = 'r2plus1d_34_8_kinetics'
-
-model_encoder = torch.hub.load(
-            TORCH_R2PLUS1D,
-            model_name,
-            num_classes=MODELS[model_name],
-            pretrained=True,
-        )
-print("encoder model created")
+#
+# model_encoder = torch.hub.load(
+#             TORCH_R2PLUS1D,
+#             model_name,
+#             num_classes=MODELS[model_name],
+#             pretrained=True,
+#         )
 
 sys.path.append('../../RAFT/core/')
 from raft import RAFT
@@ -178,6 +177,15 @@ class Encoder_Decoder(nn.Module):
     super().__init__()
     self.n_classes = n_classes
 
+    """
+    encoder
+    """
+    self.encoder = torch.hub.load(
+                    TORCH_R2PLUS1D,
+                    model_name,
+                    num_classes=MODELS[model_name],
+                    pretrained=True,
+                    )
     """
     5th layer
     """
@@ -249,11 +257,11 @@ class Encoder_Decoder(nn.Module):
     pred_that = inputs['pred_that']
     flo_this = inputs['flo_this']
 
-    out1 = model_encoder.stem(data)        #outputs of encoder model at various points
-    out2 = model_encoder.layer1(out1)
-    out3 = model_encoder.layer2(out2)
-    out4 = model_encoder.layer3(out3)
-    out5 = model_encoder.layer4(out4)
+    out1 = self.encoder.stem(data)        #outputs of encoder model at various points
+    out2 = self.encoder.layer1(out1)
+    out3 = self.encoder.layer2(out2)
+    out4 = self.encoder.layer3(out3)
+    out5 = self.encoder.layer4(out4)
 
     out5 = torch.cat([out5, convert_pred(pred_this, (1,512,8,24,1))], 3)    #setting inputs for background decoder
     out4 = torch.cat([out4, convert_pred(pred_that, (1,256,16,24,1))], 3)
