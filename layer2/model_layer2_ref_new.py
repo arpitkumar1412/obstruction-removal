@@ -17,11 +17,11 @@ from torch.nn import BCELoss, MSELoss
 from torchvision import transforms
 
 
-width=64
-height=56
+width = 64
+height = 56
 final_width, final_height, final_channels = int(width/1), int(height/1), 3
-batch=1000
-DEVICE='cuda'
+batch = 1000
+device=torch.device('cuda:0')
 
 def convert_pred(vid, shape):
   edit_vid = np.zeros((6,128,128,1), dtype=np.uint8)
@@ -31,7 +31,8 @@ def convert_pred(vid, shape):
     edit_vid[i,:,:,0] = img
 
   edit_vid = torch.from_numpy(np.reshape(edit_vid, shape))
-  return edit_vid
+  return edit_vid.to(device)
+
 
 def convert_actual(vid):
   edit_vid = np.zeros((1,6,64,64,3), dtype=np.uint8)
@@ -41,16 +42,16 @@ def convert_actual(vid):
     edit_vid[0,i] = img
 
   edit_vid = torch.from_numpy(edit_vid)
-  return edit_vid
+  return edit_vid.to(device)
 
 def load_img(img):
   img = Image.fromarray((img).astype(np.uint8)).resize((128,128))
   img = transforms.ToTensor()(img)
-  return img[None].to(DEVICE)
+  return img[None].to(device)
 
 def load_image(img):
     img = torch.from_numpy(img).permute(3,1,2,0).float()
-    return img[None]
+    return img[None].to(device)
 
 def get_flow_ini(vid):
   flow_val = np.zeros((6,64,64,3), dtype=np.uint8)
@@ -66,7 +67,7 @@ def get_flow_ini(vid):
     flo = flow_viz.flow_to_image(flo)
     flo = Image.fromarray(flo).resize((64,64))
     flow_val[j] = transforms.ToTensor()(flo).permute(1,2,0).float()
-    return flow_val
+    return flow_val.to(device)
 
 def get_flow(vid):
   flow_val = np.zeros((1,6,64,64,3), dtype=np.uint8)
@@ -82,7 +83,7 @@ def get_flow(vid):
     flo = flow_viz.flow_to_image(flo)
     flo = Image.fromarray(flo).resize((64,64))
     flow_val[0,j] = transforms.ToTensor()(flo).permute(1,2,0).float()
-    return flow_val
+    return flow_val.to(device)
 
 back = load_model('../../models/back_ref.hdf5')
 obs = load_model('../../models/obs_ref.hdf5')
@@ -115,7 +116,7 @@ model = torch.nn.DataParallel(RAFT(args))
 model.load_state_dict(torch.load(args.model))
 print("model-optical flow created")
 model_flow = model.module
-model_flow.to(DEVICE)
+model_flow.to(device)
 model_flow.eval()
 
 class conv3d_bn(nn.Module):
@@ -178,7 +179,7 @@ class Encoder_Decoder(nn.Module):
                 model_name,
                 num_classes=MODELS[model_name],
                 pretrained=False,
-            )
+            ).to(device)
 
     """
     5th layer
@@ -251,11 +252,11 @@ class Encoder_Decoder(nn.Module):
     pred_that = inputs['pred_that']
     flo_this = inputs['flo_this']
 
-    out1 = self.encoder.stem(data)        #outputs of encoder model at various points
-    out2 = self.encoder.layer1(out1)
-    out3 = self.encoder.layer2(out2)
-    out4 = self.encoder.layer3(out3)
-    out5 = self.encoder.layer4(out4)
+    out1 = self.encoder.stem(data).to(device)        #outputs of encoder model at various points
+    out2 = self.encoder.layer1(out1).to(device)
+    out3 = self.encoder.layer2(out2).to(device)
+    out4 = self.encoder.layer3(out3).to(device)
+    out5 = self.encoder.layer4(out4).to(device)
 
     out5 = torch.cat([out5, convert_pred(pred_this, (1,512,8,24,1))], 3)    #setting inputs for background decoder
     out4 = torch.cat([out4, convert_pred(pred_that, (1,256,16,24,1))], 3)
@@ -298,8 +299,8 @@ class Encoder_Decoder(nn.Module):
 # train the model   background
 def train_model(layers, epochs):
   # define the optimization
-  decode_back = Encoder_Decoder(1)    #defining the model
-  decode_obs = Encoder_Decoder(1)
+  decode_back = Encoder_Decoder(1).to(device)    #defining the model
+  decode_obs = Encoder_Decoder(1).to(device)
   # decode_back = torch.load('../../models_2_n/back-ref.pth')
   # decode_obs = torch.load('../../models_2_n/obs-ref.pth')
   criterion = MSELoss()
@@ -343,8 +344,8 @@ def train_model(layers, epochs):
             pred_back = decode_back(inputs_back)
             pred_obs = decode_obs(inputs_obs)
 
-            flo_back = np.squeeze(get_flow(pred_back.permute(0,1,4,3,2).cpu().detach().numpy()))
-            flo_obs = np.squeeze(get_flow(pred_obs.permute(0,1,4,3,2).cpu().detach().numpy()))
+            flo_back = np.squeeze(get_flow(pred_back.permute(0,1,4,3,2).detach().numpy()))
+            flo_obs = np.squeeze(get_flow(pred_obs.permute(0,1,4,3,2).detach().numpy()))
 
             pred_back = pred_back[:,:6]
             pred_obs = pred_obs[:,:6]
