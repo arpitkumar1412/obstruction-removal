@@ -22,6 +22,8 @@ height = 56
 final_width, final_height, final_channels = int(width/1), int(height/1), 3
 batch = 1000
 device=torch.device('cuda:0')
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 def convert_pred(vid, shape):
   edit_vid = np.zeros((6,128,128,1), dtype=np.uint8)
