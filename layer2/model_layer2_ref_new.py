@@ -21,7 +21,7 @@ width = 64
 height = 56
 final_width, final_height, final_channels = int(width/1), int(height/1), 3
 batch = 1000
-device=torch.device('cuda:0')
+device=torch.device('cuda:1')
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -69,7 +69,7 @@ def get_flow_ini(vid):
     flo = flow_viz.flow_to_image(flo)
     flo = Image.fromarray(flo).resize((64,64))
     flow_val[j] = transforms.ToTensor()(flo).permute(1,2,0).float()
-    return flow_val.to(device)
+    return flow_val
 
 def get_flow(vid):
   flow_val = np.zeros((1,6,64,64,3), dtype=np.uint8)
@@ -85,7 +85,7 @@ def get_flow(vid):
     flo = flow_viz.flow_to_image(flo)
     flo = Image.fromarray(flo).resize((64,64))
     flow_val[0,j] = transforms.ToTensor()(flo).permute(1,2,0).float()
-    return flow_val.to(device)
+    return flow_val
 
 back = load_model('../../models/back_ref.hdf5')
 obs = load_model('../../models/obs_ref.hdf5')
