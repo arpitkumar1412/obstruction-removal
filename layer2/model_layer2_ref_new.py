@@ -364,8 +364,8 @@ def train_model(layers, epochs):
             pred_back = pred_back[:,:6]
             pred_obs = pred_obs[:,:6]
             if l!=layers-1:
-                pred_back = np.squeeze(pred_back.detach().numpy())
-                pred_obs = np.squeeze(pred_obs.detach().numpy())
+                pred_back = np.squeeze(pred_back.cpu().detach().numpy())
+                pred_obs = np.squeeze(pred_obs.cpu().detach().numpy())
 
         yhat_back = pred_back.permute(0,1,4,3,2)
         yhat_obs = pred_obs.permute(0,1,4,3,2)
