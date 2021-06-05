@@ -10,6 +10,7 @@ import torchvision
 import torch.nn as nn
 from PIL import Image
 import tensorflow as tf
+import torch.backends.cudnn as cudnn
 from torch import tensor
 from keras.models import load_model
 from torch.optim import SGD
@@ -21,9 +22,12 @@ width = 64
 height = 56
 final_width, final_height, final_channels = int(width/1), int(height/1), 3
 batch = 1000
-device=torch.device('cuda:1')
+device=torch.device('cuda')
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+cudnn.benchmark = True
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"]='0,1'
+
 
 def convert_pred(vid, shape):
   edit_vid = np.zeros((6,128,128,1), dtype=np.uint8)
