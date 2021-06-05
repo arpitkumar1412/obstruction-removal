@@ -329,8 +329,8 @@ def train_model(layers, epochs):
   # define the optimization
   # decode_back = Encoder_Decoder(1)    #defining the model
   # decode_obs = Encoder_Decoder(1)
-  decode_back = torch.load('../../models_2_n/back-ref.pth').to(device)
-  decode_obs = torch.load('../../models_2_n/obs-ref.pth').to(device)
+  decode_back = torch.load('../../models_2_n/back-fen.pth').to(device)
+  decode_obs = torch.load('../../models_2_n/obs-fen.pth').to(device)
   criterion = MSELoss()
   optimizer_back = SGD(decode_back.parameters(), lr=0.01, momentum=0.9)
   optimizer_obs = SGD(decode_obs.parameters(), lr=0.01, momentum=0.9)
