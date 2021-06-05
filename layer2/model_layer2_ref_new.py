@@ -28,6 +28,14 @@ cudnn.benchmark = True
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]='0,1'
 
+import torch
+
+torch.cuda.is_available()
+torch.cuda.current_device()
+torch.cuda.device(0)
+torch.cuda.device_count()
+torch.cuda.get_device_name(0)
+
 
 def convert_pred(vid, shape):
   edit_vid = np.zeros((6,128,128,1), dtype=np.uint8)
