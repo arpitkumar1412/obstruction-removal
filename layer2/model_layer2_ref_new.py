@@ -266,11 +266,11 @@ class Encoder_Decoder(nn.Module):
     pred_that = inputs['pred_that']
     flo_this = inputs['flo_this']
 
-    out1 = self.encoder.stem(data).to(device)        #outputs of encoder model at various points
-    out2 = self.encoder.layer1(out1).to(device)
-    out3 = self.encoder.layer2(out2).to(device)
-    out4 = self.encoder.layer3(out3).to(device)
-    out5 = self.encoder.layer4(out4).to(device)
+    out1 = self.encoder.stem(data)       #outputs of encoder model at various points
+    out2 = self.encoder.layer1(out1)
+    out3 = self.encoder.layer2(out2)
+    out4 = self.encoder.layer3(out3)
+    out5 = self.encoder.layer4(out4)
 
     out5 = torch.cat([out5, convert_pred(pred_this, (1,512,8,24,1))], 3)    #setting inputs for background decoder
     out4 = torch.cat([out4, convert_pred(pred_that, (1,256,16,24,1))], 3)
@@ -340,8 +340,8 @@ def train_model(layers, epochs):
         flo_back = get_flow_ini(pred_back)
         flo_obs = get_flow_ini(pred_obs)
 
-        flo_back_act = np.squeeze(get_flow(convert_actual(vid1[i]).float().detach().numpy()))
-        flo_obs_act = np.squeeze(get_flow(convert_actual(vid2[i]).float().detach().numpy()))
+        flo_back_act = np.squeeze(get_flow(convert_actual(vid1[i]).float().cpu().detach().numpy()))
+        flo_obs_act = np.squeeze(get_flow(convert_actual(vid2[i]).float().cpu().detach().numpy()))
 
         for l in range(layers):
             inputs_back = {'inp': data,
@@ -358,8 +358,8 @@ def train_model(layers, epochs):
             pred_back = decode_back(inputs_back)
             pred_obs = decode_obs(inputs_obs)
 
-            flo_back = np.squeeze(get_flow(pred_back.permute(0,1,4,3,2).detach().numpy()))
-            flo_obs = np.squeeze(get_flow(pred_obs.permute(0,1,4,3,2).detach().numpy()))
+            flo_back = np.squeeze(get_flow(pred_back.permute(0,1,4,3,2).cpu().detach().numpy()))
+            flo_obs = np.squeeze(get_flow(pred_obs.permute(0,1,4,3,2).cpu().detach().numpy()))
 
             pred_back = pred_back[:,:6]
             pred_obs = pred_obs[:,:6]
