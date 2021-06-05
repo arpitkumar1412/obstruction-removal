@@ -7,6 +7,7 @@ from sklearn.metrics import accuracy_score
 import sys
 import torch
 import torchvision
+import torch.backends.cudnn as cudnn
 import torch.nn as nn
 from PIL import Image
 import tensorflow as tf
@@ -335,7 +336,7 @@ def train_model(layers, epochs):
   optimizer_obs = SGD(decode_obs.parameters(), lr=0.01, momentum=0.9)
 
   # enumerate epochs
-  for epoch in range(epochs):
+  for epoch in range(1206,epochs):
     running_loss_back = 0
     running_loss_obs = 0
     # enumerate mini batches

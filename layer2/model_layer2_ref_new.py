@@ -311,16 +311,16 @@ class Encoder_Decoder(nn.Module):
 # train the model   background
 def train_model(layers, epochs):
   # define the optimization
-  decode_back = Encoder_Decoder(1).to(device)    #defining the model
-  decode_obs = Encoder_Decoder(1).to(device)
-  # decode_back = torch.load('../../models_2_n/back-ref.pth')
-  # decode_obs = torch.load('../../models_2_n/obs-ref.pth')
+  # decode_back = Encoder_Decoder(1).to(device)    #defining the model
+  # decode_obs = Encoder_Decoder(1).to(device)
+  decode_back = torch.load('../../models_2_n/back-ref.pth').to(device)
+  decode_obs = torch.load('../../models_2_n/obs-ref.pth').to(device)
   criterion = MSELoss()
   optimizer_back = SGD(decode_back.parameters(), lr=0.01, momentum=0.9)
   optimizer_obs = SGD(decode_obs.parameters(), lr=0.01, momentum=0.9)
 
   # enumerate epochs
-  for epoch in range(epochs):
+  for epoch in range(1224,epochs):
     running_loss_back = 0
     running_loss_obs = 0
     # enumerate mini batches
