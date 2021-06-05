@@ -17,11 +17,21 @@ from torch.nn import BCELoss, MSELoss
 from torchvision import transforms
 
 
-width=64
-height=56
+width = 64
+height = 56
 final_width, final_height, final_channels = int(width/1), int(height/1), 3
-batch=1000
-DEVICE='cuda'
+batch = 1000
+device=torch.device('cuda')
+import os
+cudnn.benchmark = True
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"]='0,1'
+
+print(torch.cuda.is_available())
+print(torch.cuda.current_device())
+print(torch.cuda.device(0))
+print(torch.cuda.device_count())
+print(torch.cuda.get_device_name(0))
 
 def convert_pred(vid, shape):
   edit_vid = np.zeros((6,128,128,1), dtype=np.uint8)
@@ -31,7 +41,8 @@ def convert_pred(vid, shape):
     edit_vid[i,:,:,0] = img
 
   edit_vid = torch.from_numpy(np.reshape(edit_vid, shape))
-  return edit_vid
+  return edit_vid.to(device)
+
 
 def convert_actual(vid):
   edit_vid = np.zeros((1,6,64,64,3), dtype=np.uint8)
@@ -41,16 +52,16 @@ def convert_actual(vid):
     edit_vid[0,i] = img
 
   edit_vid = torch.from_numpy(edit_vid)
-  return edit_vid
+  return edit_vid.to(device)
 
 def load_img(img):
   img = Image.fromarray((img).astype(np.uint8)).resize((128,128))
   img = transforms.ToTensor()(img)
-  return img[None].to(DEVICE)
+  return img[None].to(device)
 
 def load_image(img):
     img = torch.from_numpy(img).permute(3,1,2,0).float()
-    return img[None]
+    return img[None].to(device)
 
 def get_flow_ini(vid):
   flow_val = np.zeros((6,64,64,3), dtype=np.uint8)
@@ -104,13 +115,23 @@ MODELS = {
     "r2plus1d_34_8_kinetics": 400,
 }
 model_name = 'r2plus1d_34_8_kinetics'
-#
-# model_encoder = torch.hub.load(
-#             TORCH_R2PLUS1D,
-#             model_name,
-#             num_classes=MODELS[model_name],
-#             pretrained=True,
-#         )
+
+model_encoder = torch.hub.load(
+            TORCH_R2PLUS1D,
+            model_name,
+            num_classes=MODELS[model_name],
+            pretrained=True,
+        )
+
+TORCH_R2PLUS1D = "moabitcoin/ig65m-pytorch"  # From https://github.com/moabitcoin/ig65m-pytorch
+MODELS = {
+    # Model name followed by the number of output classes.
+    "r2plus1d_34_32_ig65m": 359,
+    "r2plus1d_34_32_kinetics": 400,
+    "r2plus1d_34_8_ig65m": 487,
+    "r2plus1d_34_8_kinetics": 400,
+}
+model_name = 'r2plus1d_34_8_kinetics'
 
 sys.path.append('../../RAFT/core/')
 from raft import RAFT
@@ -122,7 +143,7 @@ model = torch.nn.DataParallel(RAFT(args))
 model.load_state_dict(torch.load(args.model))
 print("model-optical flow created")
 model_flow = model.module
-model_flow.to(DEVICE)
+model_flow.to(device)
 model_flow.eval()
 
 class conv3d_bn(nn.Module):
@@ -181,11 +202,12 @@ class Encoder_Decoder(nn.Module):
     encoder
     """
     self.encoder = torch.hub.load(
-                    TORCH_R2PLUS1D,
-                    model_name,
-                    num_classes=MODELS[model_name],
-                    pretrained=False,
-                    )
+                TORCH_R2PLUS1D,
+                model_name,
+                num_classes=MODELS[model_name],
+                pretrained=False,
+            ).to(device)
+
     """
     5th layer
     """
@@ -257,7 +279,7 @@ class Encoder_Decoder(nn.Module):
     pred_that = inputs['pred_that']
     flo_this = inputs['flo_this']
 
-    out1 = self.encoder.stem(data)        #outputs of encoder model at various points
+    out1 = self.encoder.stem(data)       #outputs of encoder model at various points
     out2 = self.encoder.layer1(out1)
     out3 = self.encoder.layer2(out2)
     out4 = self.encoder.layer3(out3)
@@ -304,10 +326,10 @@ class Encoder_Decoder(nn.Module):
 # train the model   background
 def train_model(layers, epochs):
   # define the optimization
-  decode_back = Encoder_Decoder(1)    #defining the model
-  decode_obs = Encoder_Decoder(1)
-  # decode_back = torch.load('../../models_2_n/back-ref.pth')
-  # decode_obs = torch.load('../../models_2_n/obs-ref.pth')
+  # decode_back = Encoder_Decoder(1)    #defining the model
+  # decode_obs = Encoder_Decoder(1)
+  decode_back = torch.load('../../models_2_n/back-ref.pth').to(device)
+  decode_obs = torch.load('../../models_2_n/obs-ref.pth').to(device)
   criterion = MSELoss()
   optimizer_back = SGD(decode_back.parameters(), lr=0.01, momentum=0.9)
   optimizer_obs = SGD(decode_obs.parameters(), lr=0.01, momentum=0.9)
@@ -331,8 +353,8 @@ def train_model(layers, epochs):
         flo_back = get_flow_ini(pred_back)
         flo_obs = get_flow_ini(pred_obs)
 
-        flo_back_act = np.squeeze(get_flow(convert_actual(vid1[i]).float().detach().numpy()))
-        flo_obs_act = np.squeeze(get_flow(convert_actual(vid2[i]).float().detach().numpy()))
+        flo_back_act = np.squeeze(get_flow(convert_actual(vid1[i]).float().cpu().detach().numpy()))
+        flo_obs_act = np.squeeze(get_flow(convert_actual(vid2[i]).float().cpu().detach().numpy()))
 
         for l in range(layers):
             inputs_back = {'inp': data,
@@ -355,8 +377,8 @@ def train_model(layers, epochs):
             pred_back = pred_back[:,:6]
             pred_obs = pred_obs[:,:6]
             if l!=layers-1:
-                pred_back = np.squeeze(pred_back.detach().numpy())
-                pred_obs = np.squeeze(pred_obs.detach().numpy())
+                pred_back = np.squeeze(pred_back.cpu().detach().numpy())
+                pred_obs = np.squeeze(pred_obs.cpu().detach().numpy())
 
         yhat_back = pred_back.permute(0,1,4,3,2)
         yhat_obs = pred_obs.permute(0,1,4,3,2)

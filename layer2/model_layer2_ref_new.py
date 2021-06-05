@@ -28,8 +28,6 @@ cudnn.benchmark = True
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]='0,1'
 
-import torch
-
 print(torch.cuda.is_available())
 print(torch.cuda.current_device())
 print(torch.cuda.device(0))
