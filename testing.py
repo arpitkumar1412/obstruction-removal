@@ -183,10 +183,20 @@ class trans3d_bn(nn.Module):
     return self.trans3d(x)
 
 
-class Decoder(nn.Module):
+class Encoder_Decoder(nn.Module):
   def __init__(self, n_classes=1):
     super().__init__()
     self.n_classes = n_classes
+
+    """
+    encoder
+    """
+    self.encoder = torch.hub.load(
+                TORCH_R2PLUS1D,
+                model_name,
+                num_classes=MODELS[model_name],
+                pretrained=False,
+            ).to(device)
 
     """
     5th layer
@@ -254,59 +264,45 @@ class Decoder(nn.Module):
     """
     init
     """
-    inp_5 = inputs['inp_5']
-    inp_4 = inputs['inp_4']
-    inp_3 = inputs['inp_3']
-    inp_2 = inputs['inp_2']
-    inp_1 = inputs['inp_1']
+    data = inputs['inp']    #prepare data for entry to encoder
+    pred_this = inputs['pred_this']
+    pred_that = inputs['pred_that']
+    flo_this = inputs['flo_this']
+
+    out1 = self.encoder.stem(data)       #outputs of encoder model at various points
+    out2 = self.encoder.layer1(out1)
+    out3 = self.encoder.layer2(out2)
+    out4 = self.encoder.layer3(out3)
+    out5 = self.encoder.layer4(out4)
+
+    out5 = torch.cat([out5, convert_pred(pred_this, (1,512,8,24,1))], 3)    #setting inputs for background decoder
+    out4 = torch.cat([out4, convert_pred(pred_that, (1,256,16,24,1))], 3)
+    out3 = torch.cat([out3, convert_pred(flo_this, (1,128,32,12,2))], 3)
+
+    inp_5 = out5.permute(0,1,4,3,2)
+    inp_4 = out4.permute(0,1,4,3,2)
+    inp_3 = out3.permute(0,1,4,3,2)
+    inp_2 = out2.permute(0,1,4,3,2)
+    inp_1 = out1.permute(0,1,4,3,2)
     """
     layer 5
     """
     layer_5 = self.layer_5(inp_5)
-    # print("layer_5")
-    # print(layer_5.shape)
     layer_4 = self.layer_4(inp_4)
-    # print("layer_4")
-    # print(layer_4.shape)
     out_54 = torch.cat([layer_5, layer_4], 1)
-    # print("out_54")
-    # print(out_54.shape)
     """
     layer 4
     """
     layer_54 = self.layer_54(out_54)
-    # print("layer_54")
-    # print(layer_54.shape)
     layer_3 = self.layer_3(inp_3)
-    # print("layer_3")
-    # print(layer_3.shape)
     out_543 = torch.cat([layer_54, layer_3], 1)
-    # print("out_543")
-    # print(out_543.shape)
     """
     layer 3
     """
     layer_543 = self.layer_543(out_543)
-    # print("layer_543")
-    # print(layer_543.shape)
     layer_2 = self.layer_2(inp_2)
-    # print("layer_2")
-    # print(layer_2.shape)
     out_5432 = torch.cat([layer_543, layer_2], 1)
-    # print("out_5432")
-    # print(out_5432.shape)
-    """
-    layer 2
-    """
-    # layer_5432 = self.layer_5432(out_5432)
-    # print("layer_5432")
-    # print(layer_5432.shape)
-    # layer_1 = self.layer_1(inp_1)
-    # print("layer_1")
-    # print(layer_1.shape)
-    # out_54321 = torch.cat([layer_5432, layer_1], 1)
-    # print("out_54321")
-    # print(out_54321.shape)
+
     """
     output layer
     """
@@ -319,15 +315,8 @@ class Decoder(nn.Module):
 decode_back = torch.load('../models_2_n/back-ref.pth')
 decode_obs = torch.load('../models_2_n/obs-ref.pth')
 
-# compute the model output
-data = load_image(mixed[i,:6,:,:,:])    #prepare data for entry to encoder
-out1 = model_encoder.stem(data)        #outputs of encoder model at various points
-out2 = model_encoder.layer1(out1)
-out3 = model_encoder.layer2(out2)
-out4 = model_encoder.layer3(out3)
-out5 = model_encoder.layer4(out4)
+data = load_image(mixed[i,:6])    #prepare data for entry to encoder
 
-print("calculating output for pretrained model")
 pred_back = np.asarray(tf.squeeze(back(tf.expand_dims(inp[i], axis=0))), dtype=np.uint8)  #output from pre-trained model
 pred_obs = np.asarray(tf.squeeze(obs(tf.expand_dims(inp[i], axis=0))), dtype=np.uint8)
 flo_back = get_flow_ini(pred_back)
@@ -335,26 +324,16 @@ flo_obs = get_flow_ini(pred_obs)
 
 layers=6
 for l in range(layers):
-    # print("layer: "+str(l))
-    out5_b = torch.cat([out5, convert_pred(pred_back, (1,512,8,24,1))], 3)    #setting inputs for background decoder
-    out4_b = torch.cat([out4, convert_pred(pred_obs, (1,256,16,24,1))], 3)
-    out3_b = torch.cat([out3, convert_pred(flo_back, (1,128,32,12,2))], 3)
-
-    out5_o = torch.cat([out5, convert_pred(pred_obs, (1,512,8,24,1))], 3)     #setting inputs for obstruction decoder
-    out4_o = torch.cat([out4, convert_pred(pred_back, (1,256,16,24,1))], 3)
-    out3_o = torch.cat([out3, convert_pred(flo_obs, (1,128,32,12,2))], 3)
-    inputs_back = {'inp_5' : out5_b.permute(0,1,4,3,2),
-              'inp_4' : out4_b.permute(0,1,4,3,2),
-              'inp_3' : out3_b.permute(0,1,4,3,2),
-              'inp_2' : out2.permute(0,1,4,3,2),
-              'inp_1' : out1.permute(0,1,4,3,2)
-            }
-    inputs_obs = {'inp_5' : out5_o.permute(0,1,4,3,2),
-              'inp_4' : out4_o.permute(0,1,4,3,2),
-              'inp_3' : out3_o.permute(0,1,4,3,2),
-              'inp_2' : out2.permute(0,1,4,3,2),
-              'inp_1' : out1.permute(0,1,4,3,2)
-            }
+    inputs_back = {'inp': data,
+      'pred_this': pred_back,
+      'pred_that': pred_obs,
+      'flo_this': flo_back
+    }
+    inputs_obs = {'inp': data,
+      'pred_this': pred_obs,
+      'pred_that': pred_back,
+      'flo_this': flo_obs
+    }
 
     pred_back = decode_back(inputs_back)
     pred_obs = decode_obs(inputs_obs)
@@ -362,13 +341,17 @@ for l in range(layers):
     flo_back = np.squeeze(get_flow(pred_back.permute(0,1,4,3,2).cpu().detach().numpy()))
     flo_obs = np.squeeze(get_flow(pred_obs.permute(0,1,4,3,2).cpu().detach().numpy()))
 
-    pred_back = pred_back[:,:6,:,:,:]
-    pred_obs = pred_obs[:,:6,:,:,:]
-    yhat_back = pred_back.permute(0,1,4,3,2)
-    yhat_obs = pred_obs.permute(0,1,4,3,2)
+    pred_back = pred_back[:,:6]
+    pred_obs = pred_obs[:,:6]
+    if l!=layers-1:
+        pred_back = np.squeeze(pred_back.cpu().detach().numpy())
+        pred_obs = np.squeeze(pred_obs.cpu().detach().numpy())
 
-    pred_back = np.squeeze(pred_back.detach().numpy())
-    pred_obs = np.squeeze(pred_obs.detach().numpy())
+yhat_back = pred_back.permute(0,1,4,3,2)
+yhat_obs = pred_obs.permute(0,1,4,3,2)
+    #
+    # pred_back = np.squeeze(pred_back.detach().numpy())
+    # pred_obs = np.squeeze(pred_obs.detach().numpy())
 
 #predict results
 model = load_model('../models_3/model_ref_back.h5', compile=False)
