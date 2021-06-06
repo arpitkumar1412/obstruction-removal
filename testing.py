@@ -12,6 +12,7 @@ from keras.models import load_model
 from keras.preprocessing.image import img_to_array
 import torch
 import torchvision
+import torch.backends.cudnn as cudnn
 import torch.nn as nn
 from torch import tensor
 from torch.optim import SGD
