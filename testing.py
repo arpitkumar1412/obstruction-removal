@@ -350,14 +350,14 @@ for l in range(layers):
     pred_back = decode_back(inputs_back)
     pred_obs = decode_obs(inputs_obs)
 
-    flo_back = np.squeeze(get_flow(pred_back.permute(0,1,4,3,2).detach().numpy()))
-    flo_obs = np.squeeze(get_flow(pred_obs.permute(0,1,4,3,2).detach().numpy()))
+    flo_back = np.squeeze(get_flow(pred_back.permute(0,1,4,3,2).cpu().detach().numpy()))
+    flo_obs = np.squeeze(get_flow(pred_obs.permute(0,1,4,3,2).cpu().detach().numpy()))
 
     pred_back = pred_back[:,:6]
     pred_obs = pred_obs[:,:6]
     if l!=layers-1:
-        pred_back = np.squeeze(pred_back.detach().numpy())
-        pred_obs = np.squeeze(pred_obs.detach().numpy())
+        pred_back = np.squeeze(pred_back.cpu().detach().numpy())
+        pred_obs = np.squeeze(pred_obs.cpu().detach().numpy())
 
 yhat_back = pred_back.permute(0,1,4,3,2)
 yhat_obs = pred_obs.permute(0,1,4,3,2)
@@ -367,7 +367,7 @@ yhat_obs = pred_obs.permute(0,1,4,3,2)
 
 #predict results
 model = load_model('../models_3/model_ref_back.h5', compile=False)
-pred_back = np.squeeze(yhat_back.detach().numpy())
+pred_back = np.squeeze(yhat_back.cpu().detach().numpy())
 print(pred_back.shape)
 pred_back = combine_images(pred_back)
 # img = Image.fromarray(pred_back.astype(np.uint8))
