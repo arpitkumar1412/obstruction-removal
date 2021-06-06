@@ -101,8 +101,8 @@ back = load_model('../models/back_ref.hdf5')
 obs = load_model('../models/obs_ref.hdf5')
 print("models loaded")
 
-mixed = np.load('../data/fencing-mixed.npy')
-inp = np.load('../data/fencing-inp.npy')
+mixed = np.load('../data/reflection-mixed.npy')
+inp = np.load('../data/reflection-inp.npy')
 print("data loaded")
 
 TORCH_R2PLUS1D = "moabitcoin/ig65m-pytorch"  # From https://github.com/moabitcoin/ig65m-pytorch
@@ -196,7 +196,7 @@ class Encoder_Decoder(nn.Module):
                 model_name,
                 num_classes=MODELS[model_name],
                 pretrained=False,
-            ).to(device)
+            )
 
     """
     5th layer
@@ -338,14 +338,14 @@ for l in range(layers):
     pred_back = decode_back(inputs_back)
     pred_obs = decode_obs(inputs_obs)
 
-    flo_back = np.squeeze(get_flow(pred_back.permute(0,1,4,3,2).cpu().detach().numpy()))
-    flo_obs = np.squeeze(get_flow(pred_obs.permute(0,1,4,3,2).cpu().detach().numpy()))
+    flo_back = np.squeeze(get_flow(pred_back.permute(0,1,4,3,2).detach().numpy()))
+    flo_obs = np.squeeze(get_flow(pred_obs.permute(0,1,4,3,2).detach().numpy()))
 
     pred_back = pred_back[:,:6]
     pred_obs = pred_obs[:,:6]
     if l!=layers-1:
-        pred_back = np.squeeze(pred_back.cpu().detach().numpy())
-        pred_obs = np.squeeze(pred_obs.cpu().detach().numpy())
+        pred_back = np.squeeze(pred_back.detach().numpy())
+        pred_obs = np.squeeze(pred_obs.detach().numpy())
 
 yhat_back = pred_back.permute(0,1,4,3,2)
 yhat_obs = pred_obs.permute(0,1,4,3,2)
