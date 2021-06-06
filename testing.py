@@ -316,8 +316,8 @@ class Decoder(nn.Module):
     out = self.out(final_0)
     return out
 
-decode_back = torch.load('../models_2/back-ref.pth')
-decode_obs = torch.load('../models_2/obs-ref.pth')
+decode_back = torch.load('../models_2_n/back-ref.pth')
+decode_obs = torch.load('../models_2_n/obs-ref.pth')
 
 # compute the model output
 data = load_image(mixed[i,:6,:,:,:])    #prepare data for entry to encoder
@@ -333,7 +333,7 @@ pred_obs = np.asarray(tf.squeeze(obs(tf.expand_dims(inp[i], axis=0))), dtype=np.
 flo_back = get_flow_ini(pred_back)
 flo_obs = get_flow_ini(pred_obs)
 
-layers=4
+layers=6
 for l in range(layers):
     # print("layer: "+str(l))
     out5_b = torch.cat([out5, convert_pred(pred_back, (1,512,8,24,1))], 3)    #setting inputs for background decoder
