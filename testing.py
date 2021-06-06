@@ -24,42 +24,53 @@ height=56
 final_width, final_height, final_channels = int(width/1), int(height/1), 3
 prod_width, prod_height = 128,768
 i=1
-DEVICE='cuda'
+device=torch.device('cuda')
+import os
+cudnn.benchmark = True
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"]='0,1'
+
+print(torch.cuda.is_available())
+print(torch.cuda.current_device())
+print(torch.cuda.device(0))
+print(torch.cuda.device_count())
+print(torch.cuda.get_device_name(0))
 
 def convert_pred(vid, shape):
   edit_vid = np.zeros((6,128,128,1), dtype=np.uint8)
   for i in range(vid.shape[0]):
-    img = Image.fromarray(vid[i,:,:,:], 'RGB').convert('L')
+    img = Image.fromarray(vid[i], 'RGB').convert('L')
     img = img.resize((128,128))
     edit_vid[i,:,:,0] = img
 
   edit_vid = torch.from_numpy(np.reshape(edit_vid, shape))
-  return edit_vid
+  return edit_vid.to(device)
+
 
 def convert_actual(vid):
   edit_vid = np.zeros((1,6,64,64,3), dtype=np.uint8)
   for i in range(vid.shape[0]):
-    img = Image.fromarray(vid[i,:,:,:])
+    img = Image.fromarray(vid[i])
     img = img.resize((64,64))
-    edit_vid[0,i,:,:,:] = img
+    edit_vid[0,i] = img
 
   edit_vid = torch.from_numpy(edit_vid)
-  return edit_vid
+  return edit_vid.to(device)
 
 def load_img(img):
   img = Image.fromarray((img).astype(np.uint8)).resize((128,128))
   img = transforms.ToTensor()(img)
-  return img[None].to(DEVICE)
+  return img[None].to(device)
 
 def load_image(img):
     img = torch.from_numpy(img).permute(3,1,2,0).float()
-    return img[None]
+    return img[None].to(device)
 
 def get_flow_ini(vid):
   flow_val = np.zeros((6,64,64,3), dtype=np.uint8)
   for j in range(5):
-    image1 = load_img(vid[j,:,:,:])
-    image2 = load_img(vid[j+1,:,:,:])
+    image1 = load_img(vid[j])
+    image2 = load_img(vid[j+1])
     padder = InputPadder(image1.shape)
     image1, image2 = padder.pad(image1, image2)
     flow_low, flow_up = model_flow(image1, image2, iters=4, test_mode=True)
@@ -68,14 +79,14 @@ def get_flow_ini(vid):
     flo = flow_up[0].permute(1,2,0).cpu().detach().numpy()
     flo = flow_viz.flow_to_image(flo)
     flo = Image.fromarray(flo).resize((64,64))
-    flow_val[j,:,:,:] = transforms.ToTensor()(flo).permute(1,2,0).float()
+    flow_val[j] = transforms.ToTensor()(flo).permute(1,2,0).float()
     return flow_val
 
 def get_flow(vid):
   flow_val = np.zeros((1,6,64,64,3), dtype=np.uint8)
   for j in range(6):
-    image1 = load_img(vid[0,j,:,:,:])
-    image2 = load_img(vid[0,j+1,:,:,:])
+    image1 = load_img(vid[0,j])
+    image2 = load_img(vid[0,j+1])
     padder = InputPadder(image1.shape)
     image1, image2 = padder.pad(image1, image2)
     flow_low, flow_up = model_flow(image1, image2, iters=4, test_mode=True)
@@ -84,7 +95,7 @@ def get_flow(vid):
     flo = flow_up[0].permute(1,2,0).cpu().detach().numpy()
     flo = flow_viz.flow_to_image(flo)
     flo = Image.fromarray(flo).resize((64,64))
-    flow_val[0,j,:,:,:] = transforms.ToTensor()(flo).permute(1,2,0).float()
+    flow_val[0,j] = transforms.ToTensor()(flo).permute(1,2,0).float()
     return flow_val
 
 def combine_images(data):
@@ -133,7 +144,7 @@ model = torch.nn.DataParallel(RAFT(args))
 model.load_state_dict(torch.load(args.model))
 print("model-optical flow created")
 model_flow = model.module
-model_flow.to(DEVICE)
+model_flow.to(device)
 model_flow.eval()
 
 class conv3d_bn(nn.Module):
@@ -196,7 +207,7 @@ class Encoder_Decoder(nn.Module):
                 model_name,
                 num_classes=MODELS[model_name],
                 pretrained=False,
-            )
+            ).to(device)
 
     """
     5th layer
