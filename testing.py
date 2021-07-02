@@ -366,11 +366,12 @@ yhat_obs = pred_obs.permute(0,1,4,3,2)
     # pred_obs = np.squeeze(pred_obs.detach().numpy())
 
 #predict results
-model = load_model('../models_3/model_ref_back.h5', compile=False)
+# model = load_model('../models_3/model_ref_back.h5', compile=False)
 pred_back = np.squeeze(yhat_back.cpu().detach().numpy())
 print(pred_back.shape)
 pred_back = combine_images(pred_back)
-# img = Image.fromarray(pred_back.astype(np.uint8))
+img = Image.fromarray(pred_back)
+img.save('prediction_layer2.png')
 # pixels = img_to_array(pixels)
 pixels = (pred_back - 127.5) / 127.5
 img = expand_dims(pixels, 0)
