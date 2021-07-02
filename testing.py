@@ -9,7 +9,7 @@ import sys
 from PIL import Image
 import tensorflow as tf
 from keras.models import load_model
-from keras.preprocessing.image import img_to_array
+from keras.preprocessing.image import img_to_array, array_to_img
 import torch
 import torchvision
 import torch.backends.cudnn as cudnn
@@ -112,6 +112,11 @@ def combine_images(data):
 back = load_model('../models/back_ref.hdf5')
 obs = load_model('../models/obs_ref.hdf5')
 print("models loaded")
+
+pred_layer1_back = back.predict(tf.expand_dims(inp[i], axis=0))
+pred_layer1_obs = obs.predict(tf.expand_dims(inp[i], axis=0))
+array_to_img(pred_layer1_back).save('prediction_layer1_1.png')
+array_to_img(pred_layer1_obs).save('prediction_layer1_2.png')
 
 mixed = np.load('../data/reflection-mixed.npy')
 inp = np.load('../data/reflection-inp.npy')
