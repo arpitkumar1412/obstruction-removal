@@ -113,14 +113,14 @@ back = load_model('../models/back_ref.hdf5')
 obs = load_model('../models/obs_ref.hdf5')
 print("models loaded")
 
+mixed = np.load('../data/reflection-mixed.npy')
+inp = np.load('../data/reflection-inp.npy')
+print("data loaded")
+
 pred_layer1_back = back.predict(tf.expand_dims(inp[i], axis=0))
 pred_layer1_obs = obs.predict(tf.expand_dims(inp[i], axis=0))
 array_to_img(pred_layer1_back).save('prediction_layer1_1.png')
 array_to_img(pred_layer1_obs).save('prediction_layer1_2.png')
-
-mixed = np.load('../data/reflection-mixed.npy')
-inp = np.load('../data/reflection-inp.npy')
-print("data loaded")
 
 TORCH_R2PLUS1D = "moabitcoin/ig65m-pytorch"  # From https://github.com/moabitcoin/ig65m-pytorch
 MODELS = {
