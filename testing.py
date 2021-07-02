@@ -372,12 +372,12 @@ print(pred_back.shape)
 pred_back = combine_images(pred_back)
 img = Image.fromarray(pred_back)
 img.save('prediction_layer2.png')
-# pixels = img_to_array(pixels)
-pixels = (pred_back - 127.5) / 127.5
-img = expand_dims(pixels, 0)
-print(img.size)
-result = model.predict(img)
-result = (result + 1) / 2.0
-print(result[0].shape)
-result = Image.fromarray(result[0].astype(np.uint8))
-result.save('prediction.png')
+# # pixels = img_to_array(pixels)
+# pixels = (pred_back - 127.5) / 127.5
+# img = expand_dims(pixels, 0)
+# print(img.size)
+# result = model.predict(img)
+# result = (result + 1) / 2.0
+# print(result[0].shape)
+# result = Image.fromarray(result[0].astype(np.uint8))
+# result.save('prediction.png')
