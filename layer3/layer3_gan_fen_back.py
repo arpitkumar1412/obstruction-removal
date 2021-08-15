@@ -31,10 +31,11 @@ width = 128
 height = 768
 batch = 1000
 frames = 6
-# load all images in a directory into memory
+
+# Used to load output of 2nd layer as an input to third layer
 def load_images(size=(width, height)):
     # load image data
-    dataset = load('maps_pred_fen.npz')
+    dataset = load('../../data/maps_pred_fen.npz')
     src_list, tar_list = list(), list()
     pred_ref_back = dataset['arr_1']
     pred_ref_back = asarray(torch.from_numpy(pred_ref_back).permute(0,1,4,3,2))

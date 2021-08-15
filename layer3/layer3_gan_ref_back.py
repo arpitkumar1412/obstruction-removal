@@ -1,4 +1,4 @@
-# example of pix2pix gan for satellite to map image-to-image translation
+# Pix2pix GAN architecture used here for background layer of reflection problem
 from numpy import load
 from numpy import zeros
 from numpy import ones
@@ -29,59 +29,59 @@ from numpy import savez_compressed
 import torch
 from PIL import Image
 
-
 # load, split and scale the maps dataset ready for training
 width = 128
 height = 768
 batch = 1000
 frames = 6
-# load all images in a directory into memory
-# def load_images(size=(width, height)):
-#     # load image data
-#     dataset = load('maps_pred.npz')
-#     src_list, tar_list = list(), list()
-#     pred_ref_back = dataset['arr_1']
-#     pred_ref_back = asarray(torch.from_numpy(pred_ref_back).permute(0,1,4,3,2))
-#     print('Loaded', pred_ref_back.shape)
-#     # get all the images from map_pred.npz
-#     for i in range(batch):
-#         src_item = np.zeros((width*6,height,3), dtype=np.uint8)
-#         k=0
-#         for j in range(frames):
-#             # load and resize the image
-#             pixels = Image.fromarray(pred_ref_back[i,j,:,:,:].astype(np.uint8))
-#             pixels = pixels.resize((height,width))
-#             # convert to numpy array
-#             pixels = img_to_array(pixels)
-#             src_item[width*k:width*(k+1),:,:] = pixels
-#             k+=1
-#         src_list.append(src_item)
-#
-#     dataset = load('data/vid1.npy')
-#     dataset = dataset[1000:2000,:,:,:,:]
-#     print('Loaded', dataset.shape)
-#     # get all the images from data/vid1.npy
-#     for i in range(batch):
-#         tar_item = np.zeros((width*6,height,3), dtype=np.uint8)
-#         k=0
-#         for j in range(frames):
-#             # load and resize the image
-#             pixels = Image.fromarray(dataset[i,j,:,:,:])
-#             pixels = pixels.resize((height,width))
-#             # convert to numpy array
-#             pixels = img_to_array(pixels)
-#             tar_item[width*k:width*(k+1),:,:] = pixels
-#             k+=1
-#         tar_list.append(tar_item)
-#     return [asarray(src_list), asarray(tar_list)]
-#
-# # load dataset
-# [src_images, tar_images] = load_images()
-# print('Loaded: ', src_images.shape, tar_images.shape)
-# # save as compressed numpy array
-# filename = 'maps_ref_back.npz'
-# savez_compressed(filename, src_images, tar_images)
-# print('Saved dataset: ', filename)
+
+#load output of 2nd layer as input
+def load_images(size=(width, height)):
+    # load image data
+    dataset = load('../../data/maps_ref_back.npz')
+    src_list, tar_list = list(), list()
+    pred_ref_back = dataset['arr_1']
+    pred_ref_back = asarray(torch.from_numpy(pred_ref_back).permute(0,1,4,3,2))
+    print('Loaded', pred_ref_back.shape)
+
+    for i in range(batch):
+        src_item = np.zeros((width*6,height,3), dtype=np.uint8)
+        k=0
+        for j in range(frames):
+            # load and resize the image
+            pixels = Image.fromarray(pred_ref_back[i,j,:,:,:].astype(np.uint8))
+            pixels = pixels.resize((height,width))
+            # convert to numpy array
+            pixels = img_to_array(pixels)
+            src_item[width*k:width*(k+1),:,:] = pixels
+            k+=1
+        src_list.append(src_item)
+
+    dataset = load('../../data/vid1.npy')
+    dataset = dataset[1000:2000,:,:,:,:]
+    print('Loaded', dataset.shape)
+    # get all the images from data/vid1.npy
+    for i in range(batch):
+        tar_item = np.zeros((width*6,height,3), dtype=np.uint8)
+        k=0
+        for j in range(frames):
+            # load and resize the image
+            pixels = Image.fromarray(dataset[i,j,:,:,:])
+            pixels = pixels.resize((height,width))
+            # convert to numpy array
+            pixels = img_to_array(pixels)
+            tar_item[width*k:width*(k+1),:,:] = pixels
+            k+=1
+        tar_list.append(tar_item)
+    return [asarray(src_list), asarray(tar_list)]
+
+# load dataset
+[src_images, tar_images] = load_images()
+print('Loaded: ', src_images.shape, tar_images.shape)
+# save as compressed numpy array
+filename = '../../data/maps_ref_back.npz'
+savez_compressed(filename, src_images, tar_images)
+print('Saved dataset: ', filename)
 
 # define the discriminator model
 def define_discriminator(image_shape):
