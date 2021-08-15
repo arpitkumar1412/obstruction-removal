@@ -1,4 +1,5 @@
-# example of pix2pix gan for satellite to map image-to-image translation
+# Pix2Pix GAN architecture used here for obstruction layer of fencing
+
 from numpy import load
 from numpy import zeros
 from numpy import ones
@@ -31,51 +32,51 @@ height = 768
 batch = 1000
 frames = 6
 # load all images in a directory into memory
-# def load_images(size=(width, height)):
-#     # load image data
-#     dataset = load('maps_pred_fen.npz')
-#     src_list, tar_list = list(), list()
-#     pred_ref_back = dataset['arr_0']
-#     pred_ref_back = asarray(torch.from_numpy(pred_ref_back).permute(0,1,4,3,2))
-#     print('Loaded', pred_fen_back.shape)
-#     # get all the images from map_pred.npz
-#     for i in range(batch):
-#         src_item = np.zeros((width*6,height,3), dtype=np.uint8)
-#         k=0
-#         for j in range(frames):
-#             # load and resize the image
-#             pixels = Image.fromarray(pred_ref_back[i,j,:,:,:].astype(np.uint8))
-#             pixels = pixels.resize((height,width))
-#             # convert to numpy array
-#             pixels = img_to_array(pixels)
-#             src_item[width*k:width*(k+1),:,:] = pixels
-#             k+=1
-#         src_list.append(src_item)
-#
-#     dataset = load('data/fencing-vid2.npy')
-#     print('Loaded', dataset.shape)
-#     # get all the images from data/vid1.npy
-#     for i in range(batch):
-#         tar_item = np.zeros((width*6,height,3), dtype=np.uint8)
-#         k=0
-#         for j in range(frames):
-#             # load and resize the image
-#             pixels = Image.fromarray(dataset[i,j,:,:,:])
-#             pixels = pixels.resize((height,width))
-#             # convert to numpy array
-#             pixels = img_to_array(pixels)
-#             tar_item[width*k:width*(k+1),:,:] = pixels
-#             k+=1
-#         tar_list.append(tar_item)
-#     return [asarray(src_list), asarray(tar_list)]
-#
-# # load dataset
-# [src_images, tar_images] = load_images()
-# print('Loaded: ', src_images.shape, tar_images.shape)
-# # save as compressed numpy array
-# filename = 'maps_fen_obs.npz'
-# savez_compressed(filename, src_images, tar_images)
-# print('Saved dataset: ', filename)
+def load_images(size=(width, height)):
+    # load image data
+    dataset = load('maps_pred_fen.npz')
+    src_list, tar_list = list(), list()
+    pred_ref_back = dataset['arr_0']
+    pred_ref_back = asarray(torch.from_numpy(pred_ref_back).permute(0,1,4,3,2))
+    print('Loaded', pred_fen_back.shape)
+    # get all the images from map_pred.npz
+    for i in range(batch):
+        src_item = np.zeros((width*6,height,3), dtype=np.uint8)
+        k=0
+        for j in range(frames):
+            # load and resize the image
+            pixels = Image.fromarray(pred_ref_back[i,j,:,:,:].astype(np.uint8))
+            pixels = pixels.resize((height,width))
+            # convert to numpy array
+            pixels = img_to_array(pixels)
+            src_item[width*k:width*(k+1),:,:] = pixels
+            k+=1
+        src_list.append(src_item)
+
+    dataset = load('data/fencing-vid2.npy')
+    print('Loaded', dataset.shape)
+    # get all the images from data/vid1.npy
+    for i in range(batch):
+        tar_item = np.zeros((width*6,height,3), dtype=np.uint8)
+        k=0
+        for j in range(frames):
+            # load and resize the image
+            pixels = Image.fromarray(dataset[i,j,:,:,:])
+            pixels = pixels.resize((height,width))
+            # convert to numpy array
+            pixels = img_to_array(pixels)
+            tar_item[width*k:width*(k+1),:,:] = pixels
+            k+=1
+        tar_list.append(tar_item)
+    return [asarray(src_list), asarray(tar_list)]
+
+# load dataset
+[src_images, tar_images] = load_images()
+print('Loaded: ', src_images.shape, tar_images.shape)
+# save as compressed numpy array
+filename = 'maps_fen_obs.npz'
+savez_compressed(filename, src_images, tar_images)
+print('Saved dataset: ', filename)
 
 # define the discriminator model
 def define_discriminator(image_shape):

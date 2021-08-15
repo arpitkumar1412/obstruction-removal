@@ -56,7 +56,7 @@ def convert_actual(vid):
   return edit_vid.to(device)
 
 def load_img(img):
-  img = Image.fromarray((img).astype(np.uint8)).resize((128,128))
+  img = Image.fromarray(img.astype(np.uint8)).resize((128, 128))
   img = transforms.ToTensor()(img)
   return img[None].to(device)
 
@@ -402,7 +402,7 @@ def train_model(layers, epochs):
         print("fen, epoch - "+str(epoch)+", batch - "+str(i)+", running loss background - "+str(running_loss_back)+", running loss obstruction - "+str(running_loss_obs))
 
     print('**********************************************************************************************************************************************************')
-    if(epoch%5==0):
+    if epoch%5==0:
       print('saving fencing model, epoch-'+str(epoch))
       torch.save(decode_back, '../../models_2_n/back-fen.pth')
       torch.save(decode_obs, '../../models_2_n/obs-fen.pth')

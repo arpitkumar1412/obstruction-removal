@@ -1,3 +1,5 @@
+#Architecture and training the model for obstruction layer of fencing problem
+
 width=64
 height=56
 final_width, final_height, final_channels = int(width/1), int(height/1), 3
@@ -50,6 +52,7 @@ def feature_extractor_and_layer_flow_estimator():
   model.add(tf.keras.layers.Reshape((6, final_width, final_height, final_channels)))
   return model
 
+# Training the model
 obs = feature_extractor_and_layer_flow_estimator()
 obs.compile(loss='mse', optimizer='adam', metrics=['accuracy'])
 X_train, X_test, y_train, y_test = train_test_split(inp, vid2, test_size=0.2, random_state=42)

@@ -386,7 +386,7 @@ def train_model(layers, epochs):
         print("ref, epoch - "+str(epoch)+", batch - "+str(i)+", running loss background - "+str(running_loss_back)+", running loss obstruction - "+str(running_loss_obs))
 
     print('**********************************************************************************************************************************************************')
-    if(epoch%5==0):
+    if epoch%5==0:
         print('saving reflection model, epoch-'+str(epoch))
         torch.save(decode_back, '../../models_2_n/back-ref.pth')
         torch.save(decode_obs, '../../models_2_n/obs-ref.pth')

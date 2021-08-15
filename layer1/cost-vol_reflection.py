@@ -1,3 +1,6 @@
+#Calculate the Change Matrix(CH) - cross-correlation between two 2-dimensional matrix
+#Run this after running the fencing.py in data_creation folder.
+
 import numpy as np
 import tensorflow as tf
 import scipy
@@ -38,5 +41,6 @@ def cal_cost(features):
     for j in range(6):
       inp[i][j] = tf.concat([mixed[i][j], mixed[i][j+1], cost[i][j]], axis=0)
   return tf.convert_to_tensor(inp)
+
 inp = cal_cost(mixed)
-# np.save('D:/reflection-inp.npy', inp)
+np.save('../../data/reflection-inp.npy', inp)
