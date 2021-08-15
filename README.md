@@ -7,9 +7,9 @@ The Repo consists of 4 folders -
 The dataset for the model can be downloaded from these links - https://drive.google.com/file/d/1Pf2WxCBqBLdfAi2gdV9I-_Y479aXTVZU/view?usp=sharing   
 Copy the contents of the .zip file in a folder called data.
 
-You can find the link for the raw dataset here - ####add the dataset
+You can find the link for the raw dataset here - https://drive.google.com/drive/folders/1j6o5sdlTpGyX1u2z0cifLsr5rzpKFBQp?usp=sharing
 
-If you want to create and train the model on your own dataset, the structure of your dataset should look like this -<br> 
+If you want to create and train the model on your own dataset, the structure of your dataset should look like this(please see the above raw dataset for example -<br> 
 ------------- Fencing<br>
 &emsp;&emsp;------------- 0/1/2/3...(folder name, training example)<br>
 &emsp;&emsp;&emsp;&emsp;------------- mixed(contains 7 frames)<br>
