@@ -10,7 +10,7 @@ Copy the contents of the .zip file in a folder called data.
 You can find the link for the raw dataset here - ####add the dataset
 
 If you want to create and train the model on your own dataset, the structure of your dataset should look like this - 
-  ------------- Fencing
+&nbsp;------------- Fencing
       ------------- 0/1/2/3...(folder name, training example)
           ------------- mixed(contains 7 frames)
               ------------- 0.jpg/1.jpg...(frame containing the image to be cleaned, 896x512)
