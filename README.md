@@ -1,6 +1,7 @@
 # obstruction-removal
-
 <ul>
+<li>Checkout the project manuscript above - Obstruction.pdf</li><br>
+<li><img src="images/example.png"></li>
 <li>The Repo consists of 4 folders -<br>
 &emsp;1 for data creation from images in .jpg format to .npy format for the model to be able to use them as input for training.<br>
 &emsp;3 folders, each contain the code for each of the 3 layers (i) Initial layer Construction, (ii) Predictor-Flow Improvisation and (iii) Feature Corrector</li><br>
