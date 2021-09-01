@@ -24,7 +24,6 @@ width=64
 height=56
 final_width, final_height, final_channels = int(width/1), int(height/1), 3
 prod_width, prod_height = 128,768
-i=1
 device=torch.device('cuda')
 import os
 cudnn.benchmark = True
@@ -331,60 +330,60 @@ class Encoder_Decoder(nn.Module):
     out = self.out(final_0)
     return out
 
-decode_back = torch.load('../models_2_n/back-ref.pth')
-decode_obs = torch.load('../models_2_n/obs-ref.pth')
+for i in range(1000):
+    decode_back = torch.load('../models_2_n/back-ref.pth')
+    decode_obs = torch.load('../models_2_n/obs-ref.pth')
 
-data = load_image(mixed[i,:6])    #prepare data for entry to encoder
+    data = load_image(mixed[i,:6])    #prepare data for entry to encoder
 
-pred_back = np.asarray(tf.squeeze(back(tf.expand_dims(inp[i], axis=0))), dtype=np.uint8)  #output from pre-trained model
-pred_obs = np.asarray(tf.squeeze(obs(tf.expand_dims(inp[i], axis=0))), dtype=np.uint8)
-flo_back = get_flow_ini(pred_back)
-flo_obs = get_flow_ini(pred_obs)
+    pred_back = np.asarray(tf.squeeze(back(tf.expand_dims(inp[i], axis=0))), dtype=np.uint8)  #output from pre-trained model
+    pred_obs = np.asarray(tf.squeeze(obs(tf.expand_dims(inp[i], axis=0))), dtype=np.uint8)
+    flo_back = get_flow_ini(pred_back)
+    flo_obs = get_flow_ini(pred_obs)
 
-layers=6
-for l in range(layers):
-    inputs_back = {'inp': data,
-      'pred_this': pred_back,
-      'pred_that': pred_obs,
-      'flo_this': flo_back
-    }
-    inputs_obs = {'inp': data,
-      'pred_this': pred_obs,
-      'pred_that': pred_back,
-      'flo_this': flo_obs
-    }
+    layers=6
+    for l in range(layers):
+        inputs_back = {'inp': data,
+          'pred_this': pred_back,
+          'pred_that': pred_obs,
+          'flo_this': flo_back
+        }
+        inputs_obs = {'inp': data,
+          'pred_this': pred_obs,
+          'pred_that': pred_back,
+          'flo_this': flo_obs
+        }
 
-    pred_back = decode_back(inputs_back)
-    pred_obs = decode_obs(inputs_obs)
+        pred_back = decode_back(inputs_back)
+        pred_obs = decode_obs(inputs_obs)
 
-    flo_back = np.squeeze(get_flow(pred_back.permute(0,1,4,3,2).cpu().detach().numpy()))
-    flo_obs = np.squeeze(get_flow(pred_obs.permute(0,1,4,3,2).cpu().detach().numpy()))
+        flo_back = np.squeeze(get_flow(pred_back.permute(0,1,4,3,2).cpu().detach().numpy()))
+        flo_obs = np.squeeze(get_flow(pred_obs.permute(0,1,4,3,2).cpu().detach().numpy()))
 
-    pred_back = pred_back[:,:6]
-    pred_obs = pred_obs[:,:6]
-    if l!=layers-1:
-        pred_back = np.squeeze(pred_back.cpu().detach().numpy())
-        pred_obs = np.squeeze(pred_obs.cpu().detach().numpy())
+        pred_back = pred_back[:,:6]
+        pred_obs = pred_obs[:,:6]
+        if l!=layers-1:
+            pred_back = np.squeeze(pred_back.cpu().detach().numpy())
+            pred_obs = np.squeeze(pred_obs.cpu().detach().numpy())
 
-yhat_back = pred_back.permute(0,1,4,3,2)
-yhat_obs = pred_obs.permute(0,1,4,3,2)
-    #
-    # pred_back = np.squeeze(pred_back.detach().numpy())
-    # pred_obs = np.squeeze(pred_obs.detach().numpy())
+    yhat_back = pred_back.permute(0,1,4,3,2)
+    yhat_obs = pred_obs.permute(0,1,4,3,2)
+        #
+        # pred_back = np.squeeze(pred_back.detach().numpy())
+        # pred_obs = np.squeeze(pred_obs.detach().numpy())
 
-#predict results
-# model = load_model('../models_3/model_ref_back.h5', compile=False)
-pred_back = np.squeeze(yhat_back.cpu().detach().numpy())
-pred_obs = np.squeeze(yhat_obs.cpu().detach().numpy())
-print(pred_back.shape)
-print(pred_obs.shape)
-pred_back = combine_images(pred_back)
-pred_obs = combine_images(pred_obs)
-img_1 = Image.fromarray(pred_back)
-img_2 = Image.fromarray(pred_obs)
-img_1.save('prediction_layer2_1.png')
-img_2.save('prediction_layer2_2.png')
-# # pixels = img_to_array(pixels)
+    #predict results
+    # model = load_model('../models_3/model_ref_back.h5', compile=False)
+    pred_back = np.squeeze(yhat_back.cpu().detach().numpy())
+    pred_obs = np.squeeze(yhat_obs.cpu().detach().numpy())
+    print(pred_back.shape)
+    print(pred_obs.shape)
+    pred_back = combine_images(pred_back)
+    pred_obs = combine_images(pred_obs)
+    img_1 = Image.fromarray(pred_back)
+    img_2 = Image.fromarray(pred_obs)
+    print(i)
+     # pixels = img_to_array(pixels)
 # pixels = (pred_back - 127.5) / 127.5
 # img = expand_dims(pixels, 0)
 # print(img.size)
