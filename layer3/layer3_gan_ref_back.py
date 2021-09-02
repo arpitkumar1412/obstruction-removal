@@ -30,50 +30,37 @@ import torch
 from PIL import Image
 
 # load, split and scale the maps dataset ready for training
-width = 128
-height = 768
+width = 768
+height = 128
+width_final = 56
+height_final = 64
 batch = 1000
 frames = 6
 
-#load output of 2nd layer as input
-def load_images(size=(width, height)):
-    # load image data
-    dataset = load('../../data/maps_ref_back.npz')
-    src_list, tar_list = list(), list()
-    pred_ref_back = dataset['arr_1']
-    pred_ref_back = asarray(torch.from_numpy(pred_ref_back).permute(0,1,4,3,2))
-    print('Loaded', pred_ref_back.shape)
+def load_image():
 
-    for i in range(batch):
-        src_item = np.zeros((width*6,height,3), dtype=np.uint8)
-        k=0
-        for j in range(frames):
-            # load and resize the image
-            pixels = Image.fromarray(pred_ref_back[i,j,:,:,:].astype(np.uint8))
-            pixels = pixels.resize((height,width))
-            # convert to numpy array
-            pixels = img_to_array(pixels)
-            src_item[width*k:width*(k+1),:,:] = pixels
-            k+=1
-        src_list.append(src_item)
+	src_list, tar_list = list(), list()
+	path = '../layer2_prediction/back_ref'
+	for image in os.listdir(path):
+		img = Image.open(path + image)
+		np_img = np.array(img)
+		index = 0
+		for i in range(frames):
+			img_curr = np_img[:,index*128:(index+1)*128-1,3]
+			img_curr = Image.fromarray(img_curr)
+			img_curr = img_curr.resize((width_final, height_final))
+			np_img = np.array(img_curr)
+			src_list.append(np_img)
 
-    dataset = load('../../data/vid1.npy')
-    dataset = dataset[1000:2000,:,:,:,:]
-    print('Loaded', dataset.shape)
-    # get all the images from data/vid1.npy
-    for i in range(batch):
-        tar_item = np.zeros((width*6,height,3), dtype=np.uint8)
-        k=0
-        for j in range(frames):
-            # load and resize the image
-            pixels = Image.fromarray(dataset[i,j,:,:,:])
-            pixels = pixels.resize((height,width))
-            # convert to numpy array
-            pixels = img_to_array(pixels)
-            tar_item[width*k:width*(k+1),:,:] = pixels
-            k+=1
-        tar_list.append(tar_item)
-    return [asarray(src_list), asarray(tar_list)]
+
+	dataset = load('../../data/reflection-vid1.npy')
+	for i in range(batch):
+		for j in range(frames):
+			# load and resize the image
+			pixels = dataset[i,j,:,:,:]
+			tar_list.append(pixels)
+
+	return src_list, tar_list
 
 # load dataset
 [src_images, tar_images] = load_images()
@@ -82,6 +69,48 @@ print('Loaded: ', src_images.shape, tar_images.shape)
 filename = '../../data/maps_ref_back.npz'
 savez_compressed(filename, src_images, tar_images)
 print('Saved dataset: ', filename)
+
+# #load output of 2nd layer as input
+# def load_images(size=(width, height)):
+#     # load image data
+#     dataset = load('../../data/maps_ref_back.npz')
+#     src_list, tar_list = list(), list()
+#     pred_ref_back = dataset['arr_1']
+#     pred_ref_back = asarray(torch.from_numpy(pred_ref_back).permute(0,1,4,3,2))
+#     print('Loaded', pred_ref_back.shape)
+#
+#     for i in range(batch):
+#         src_item = np.zeros((width*6,height,3), dtype=np.uint8)
+#         k=0
+#         for j in range(frames):
+#             # load and resize the image
+#             pixels = Image.fromarray(pred_ref_back[i,j,:,:,:].astype(np.uint8))
+#             pixels = pixels.resize((height,width))
+#             # convert to numpy array
+#             pixels = img_to_array(pixels)
+#             src_item[width*k:width*(k+1),:,:] = pixels
+#             k+=1
+#         src_list.append(src_item)
+#
+#     dataset = load('../../data/vid1.npy')
+#     dataset = dataset[1000:2000,:,:,:,:]
+#     print('Loaded', dataset.shape)
+#     # get all the images from data/vid1.npy
+#     for i in range(batch):
+#         tar_item = np.zeros((width*6,height,3), dtype=np.uint8)
+#         k=0
+#         for j in range(frames):
+#             # load and resize the image
+#             pixels = Image.fromarray(dataset[i,j,:,:,:])
+#             pixels = pixels.resize((height,width))
+#             # convert to numpy array
+#             pixels = img_to_array(pixels)
+#             tar_item[width*k:width*(k+1),:,:] = pixels
+#             k+=1
+#         tar_list.append(tar_item)
+#     return [asarray(src_list), asarray(tar_list)]
+
+
 
 # define the discriminator model
 def define_discriminator(image_shape):
@@ -236,40 +265,13 @@ def generate_fake_samples(g_model, samples, patch_shape):
 
 # generate samples and save as a plot and save the model
 def summarize_performance(step, g_model, dataset, n_samples=3):
-	# select a sample of input images
-	[X_realA, X_realB], _ = generate_real_samples(dataset, n_samples, 1)
-	# generate a batch of fake samples
-	X_fakeB, _ = generate_fake_samples(g_model, X_realA, 1)
-	# scale all pixels from [-1,1] to [0,1]
-	X_realA = (X_realA + 1) / 2.0
-	X_realB = (X_realB + 1) / 2.0
-	X_fakeB = (X_fakeB + 1) / 2.0
-	# plot real source images
-	for i in range(n_samples):
-		pyplot.subplot(3, n_samples, 1 + i)
-		pyplot.axis('off')
-		pyplot.imshow(X_realA[i])
-	# plot generated target image
-	for i in range(n_samples):
-		pyplot.subplot(3, n_samples, 1 + n_samples + i)
-		pyplot.axis('off')
-		pyplot.imshow(X_fakeB[i])
-	# plot real target image
-	for i in range(n_samples):
-		pyplot.subplot(3, n_samples, 1 + n_samples*2 + i)
-		pyplot.axis('off')
-		pyplot.imshow(X_realB[i])
-	# save plot to file
-	filename1 = 'plot_ref_back.png'
-	pyplot.savefig(filename1)
-	pyplot.close()
 	# save the generator model
-	filename2 = 'model_ref_back.h5'
+	filename2 = '../../models_3/model_ref_back.h5'
 	g_model.save(filename2)
-	print('>Saved: %s and %s' % (filename1, filename2))
+	print('>Saved: %s ' % (filename2))
 
 # train pix2pix model
-def train(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
+def train(d_model, g_model, gan_model, dataset, n_epochs=10000, n_batch=10):
 	# determine the output square shape of the discriminator
 	n_patch = d_model.output_shape[1]
 	# unpack dataset
@@ -308,7 +310,7 @@ g_model = define_generator(image_shape)
 # define the composite model
 gan_model = define_gan(g_model, d_model, image_shape)
 # train model
-# train(d_model, g_model, gan_model, dataset)
+train(d_model, g_model, gan_model, dataset)
 
 # load an image
 def load_image(filename, size=(width*6,height)):
@@ -322,17 +324,17 @@ def load_image(filename, size=(width*6,height)):
 	pixels = expand_dims(pixels, 0)
 	return pixels
 
-#predict results
-model = load_model('../../models_3/model_ref_back.h5')
-# print(dataset[0][0].shape)
-filename1 = 'test_input_ref_back.png'
-img = Image.fromarray(dataset[0][0].astype(np.uint8))
-img.save(filename1)
-img = load_image('test_input_ref_back.png')
-print(img.size)
-result = model.predict(img)
-# scale from [-1,1] to [0,1]
-result = (result + 1) / 2.0
-print(result[0].shape)
-result = Image.fromarray(result[0].astype(np.uint8))
-result.save('prediction.png')
+# #predict results
+# model = load_model('../../models_3/model_ref_back.h5')
+# # print(dataset[0][0].shape)
+# filename1 = 'test_input_ref_back.png'
+# img = Image.fromarray(dataset[0][0].astype(np.uint8))
+# img.save(filename1)
+# img = load_image('test_input_ref_back.png')
+# print(img.size)
+# result = model.predict(img)
+# # scale from [-1,1] to [0,1]
+# result = (result + 1) / 2.0
+# print(result[0].shape)
+# result = Image.fromarray(result[0].astype(np.uint8))
+# result.save('prediction.png')
