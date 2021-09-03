@@ -45,7 +45,6 @@ def load_image(filename, size=(width*6,height)):
 	# scale from [0,255] to [-1,1]
 	pixels = (pixels - 127.5) / 127.5
 	# reshape to 1 sample
-	pixels = expand_dims(pixels, 0)
 	return pixels
 
 def load_images():
@@ -54,7 +53,7 @@ def load_images():
 	path = '../layer2_prediction/back_ref/'
 	for image in listdir(path):
 		print(path+image)
-		img = load_image(path + image, target_size=(384,56))
+		img = load_img(path + image, target_size=(384,56))
 		np_img = img_to_array(img)
 		for i in range(frames):
 			img_curr = np_img[i*64:(i+1)*64,:,:]
@@ -79,13 +78,13 @@ def load_images():
 
 # load dataset
 [src_images, tar_images] = load_images()
+img = load_img('../layer2_prediction/back_ref/' + 'back_ref0.png')
+img.save('test.png')
 # dataset = load('../../data/maps_ref_back.npz')
 #src_images, tar_images = dataset['arr_0'], dataset['arr_1']
-#print('Loaded', src_images.shape, tar_images.shape)
-src_images = src_images.astype(np.uint8)
-print(src_images[0,:,:,:])
-Image.fromarray(src_images[67,:,:,:].astype(np.uint8)).save('../layer2_prediction/src_img.png')
-Image.fromarray(tar_images[67,:,:,:].astype(np.uint8)).save('../layer2_prediction/tar_img.png')
+print('Loaded', src_images.shape, tar_images.shape)
+Image.fromarray((src_images[67,:,:,:]*255).astype(np.uint8)).save('../layer2_prediction/src_img.png')
+Image.fromarray(tar_images[67,:,:,:]).save('../layer2_prediction/tar_img.png')
 print('images saved')
 # save as compressed numpy array
 filename = '../../data/maps_ref_back.npz'
