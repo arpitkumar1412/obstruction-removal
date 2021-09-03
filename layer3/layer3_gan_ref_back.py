@@ -46,11 +46,10 @@ def load_images():
 		for i in range(frames):
 			img_curr = np_img[i*128:(i+1)*128,:,:]
 			img_curr = Image.fromarray(img_curr.astype(np.uint8))
-			print(img_curr.size)
 			img_curr = img_curr.resize((width_final, height_final))
-			#print(img_curr.size)
-			np_img_new = np.array(img_curr)
-			src_list.append(np_img_new)
+			print(img_curr.size)
+			np_img_new = np.array(img_curr, dtype=np.uint8)
+			src_list.append(np_img_new.astype(np.uint8))
 
 	print('source images loaded')
 
@@ -62,21 +61,21 @@ def load_images():
 			tar_list.append(pixels)
 
 
-	print('images saved')
 	return np.asarray(src_list), np.asarray(tar_list)
 
 # load dataset
 [src_images, tar_images] = load_images()
 # dataset = load('../../data/maps_ref_back.npz')
 #src_images, tar_images = dataset['arr_0'], dataset['arr_1']
-print('Loaded', src_images.shape, tar_images.shape)
-Image.fromarray(src_images[67]).save('../layer2_prediction/src_img.png')
-Image.fromarray(tar_images[67]).save('../layer2_prediction/tar_img.png')
+#print('Loaded', src_images.shape, tar_images.shape)
+print(src_images[0,:,:,:].shape)
+Image.fromarray(src_images[67,:,:,:].astype(np.uint8)).save('../layer2_prediction/src_img.png')
+Image.fromarray(tar_images[67,:,:,:].astype(np.uint8)).save('../layer2_prediction/tar_img.png')
 print('images saved')
 # save as compressed numpy array
-# filename = '../../data/maps_ref_back.npz'
-# savez_compressed(filename, src_images, tar_images)
-# print('Saved dataset: ', filename)
+filename = '../../data/maps_ref_back.npz'
+savez_compressed(filename, src_images, tar_images)
+print('Saved dataset: ', filename)
 
 # #load output of 2nd layer as input
 # def load_images(size=(width, height)):
