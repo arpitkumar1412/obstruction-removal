@@ -108,12 +108,12 @@ def combine_images(data):
         combined_item[prod_width*j:prod_width*(j+1),:,:] = pixels
     return combined_item
 
-back = load_model('../models/back_ref.hdf5')
-obs = load_model('../models/obs_ref.hdf5')
+back = load_model('../models/back_fen.hdf5')
+obs = load_model('../models/obs_fen.hdf5')
 print("models loaded")
 
-mixed = np.load('../data/reflection-mixed.npy')
-inp = np.load('../data/reflection-inp.npy')
+mixed = np.load('../data/fencing-mixed.npy')
+inp = np.load('../data/fencing-inp.npy')
 print("data loaded")
 
 # pred_layer1_back = back.predict(tf.expand_dims(inp[i], axis=0))
@@ -331,8 +331,8 @@ class Encoder_Decoder(nn.Module):
     return out
 
 for i in range(1000):
-    decode_back = torch.load('../models_2_n/back-ref.pth')
-    decode_obs = torch.load('../models_2_n/obs-ref.pth')
+    decode_back = torch.load('../models_2_n/back-fen.pth')
+    decode_obs = torch.load('../models_2_n/obs-fen.pth')
 
     data = load_image(mixed[i,:6])    #prepare data for entry to encoder
 
@@ -382,8 +382,8 @@ for i in range(1000):
     pred_obs = combine_images(pred_obs)
     img_1 = Image.fromarray(pred_back)
     img_2 = Image.fromarray(pred_obs)
-    img_1.save('layer2_prediction/back_ref' + i)
-    img_2.save('layer2_prediction/obs_ref' + i)
+    img_1.save('layer2_prediction/back_fen/back_fen' + str(i) + '.png')
+    img_2.save('layer2_prediction/obs_fen/obs_fen' + str(i) + '.png')
     print(i)
      # pixels = img_to_array(pixels)
 # pixels = (pred_back - 127.5) / 127.5
