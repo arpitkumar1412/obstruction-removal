@@ -66,12 +66,12 @@ def load_images():
 	return np.asarray(src_list), np.asarray(tar_list)
 
 # load dataset
-# [src_images, tar_images] = load_images()
-dataset = load('../../data/maps_ref_back.npz')
-X1, X2 = dataset['arr_0'], dataset['arr_1']
-print('Loaded', X1.shape, X2.shape)
-Image.fromarray(X1[67]).save('../layer2_prediction/src_img.png')
-Image.fromarray(X2[67]).save('../layer2_prediction/tar_img.png')
+[src_images, tar_images] = load_images()
+# dataset = load('../../data/maps_ref_back.npz')
+src_images, tar_images = dataset['arr_0'], dataset['arr_1']
+print('Loaded', src_images.shape, tar_images.shape)
+Image.fromarray(src_images[67]).save('../layer2_prediction/src_img.png')
+Image.fromarray(tar_images[67]).save('../layer2_prediction/tar_img.png')
 print('images saved')
 # save as compressed numpy array
 # filename = '../../data/maps_ref_back.npz'
