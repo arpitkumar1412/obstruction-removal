@@ -41,16 +41,17 @@ def load_images():
 	src_list, tar_list = list(), list()
 	path = '../layer2_prediction/back_ref/'
 	for image in listdir(path):
-		img = Image.open(path + image)
+		img = load_img(path + image)
 		np_img = img_to_array(img)
 		for i in range(frames):
 			img_curr = np_img[i*128:(i+1)*128,:,:]
-			img_curr = Image.fromarray(img_curr.astype(np.uint8))
-			print(img_curr.size)
-			img_curr = img_curr.resize((width_final, height_final))
-			#print(img_curr.size)
-			np_img_new = np.array(img_curr)
-			src_list.append(np_img_new)
+			print(type(img_curr))
+			# img_curr = Image.fromarray(img_curr.astype(np.uint8))
+			# print(img_curr.size)
+			# img_curr = img_curr.resize((width_final, height_final))
+			# #print(img_curr.size)
+			# np_img_new = np.array(img_curr)
+			src_list.append(img_curr)
 
 	print('source images loaded')
 
