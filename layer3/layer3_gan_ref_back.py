@@ -36,6 +36,18 @@ height_final = 64
 batch = 1000
 frames = 6
 
+# load an image
+def load_image(filename, size=(width*6,height)):
+	# load image with the preferred size
+	pixels = load_img(filename, target_size=size)
+	# convert to numpy array
+	pixels = img_to_array(pixels)
+	# scale from [0,255] to [-1,1]
+	pixels = (pixels - 127.5) / 127.5
+	# reshape to 1 sample
+	pixels = expand_dims(pixels, 0)
+	return pixels
+
 def load_images():
 
 	src_list, tar_list = list(), list()
@@ -322,17 +334,7 @@ gan_model = define_gan(g_model, d_model, image_shape)
 # train model
 train(d_model, g_model, gan_model, dataset)
 
-# load an image
-def load_image(filename, size=(width*6,height)):
-	# load image with the preferred size
-	pixels = load_img(filename, target_size=size)
-	# convert to numpy array
-	pixels = img_to_array(pixels)
-	# scale from [0,255] to [-1,1]
-	pixels = (pixels - 127.5) / 127.5
-	# reshape to 1 sample
-	pixels = expand_dims(pixels, 0)
-	return pixels
+
 
 # #predict results
 # model = load_model('../../models_3/model_ref_back.h5')
