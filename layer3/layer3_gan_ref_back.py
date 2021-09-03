@@ -3,7 +3,6 @@ from numpy import load
 from numpy import zeros
 from numpy import ones
 from numpy.random import randint
-from keras.optimizers import Adam
 from keras.initializers import RandomNormal
 from keras.models import Model
 from keras.models import Input
@@ -37,21 +36,23 @@ height_final = 64
 batch = 1000
 frames = 6
 
-def load_image():
+def load_images():
 
 	src_list, tar_list = list(), list()
-	path = '../layer2_prediction/back_ref'
-	for image in os.listdir(path):
+	path = '../layer2_prediction/back_ref/'
+	for image in listdir(path):
 		img = Image.open(path + image)
 		np_img = np.array(img)
-		index = 0
 		for i in range(frames):
-			img_curr = np_img[:,index*128:(index+1)*128-1,3]
+			img_curr = np_img[i*128:(i+1)*128,:,:]
 			img_curr = Image.fromarray(img_curr)
+			print(img_curr.size)
 			img_curr = img_curr.resize((width_final, height_final))
-			np_img = np.array(img_curr)
-			src_list.append(np_img)
+			#print(img_curr.size)
+			np_img_new = np.array(img_curr)
+			src_list.append(np_img_new)
 
+	print('source images loaded')
 
 	dataset = load('../../data/reflection-vid1.npy')
 	for i in range(batch):
@@ -60,7 +61,10 @@ def load_image():
 			pixels = dataset[i,j,:,:,:]
 			tar_list.append(pixels)
 
-	return src_list, tar_list
+	Image.fromarray(src_list[10]).save('../layer2_prediction/src_img.png')
+	Image.fromarray(tar_list[10]).save('../layer2_prediction/tar_img.png')
+	print('images saved')
+	return np.asarray(src_list), np.asarray(tar_list)
 
 # load dataset
 [src_images, tar_images] = load_images()
@@ -228,7 +232,7 @@ def define_gan(g_model, d_model, image_shape):
 	# src image as input, generated image and classification output
 	model = Model(in_src, [dis_out, gen_out])
 	# compile model
-	opt = Adam(lr=0.0002, beta_1=0.5)
+	opt = keras.optimizers.Adam(lr=0.0002, beta_1=0.5)
 	model.compile(loss=['binary_crossentropy', 'mae'], optimizer=opt, loss_weights=[1,100])
 	return model
 
