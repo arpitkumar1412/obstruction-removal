@@ -61,18 +61,20 @@ def load_images():
 			pixels = dataset[i,j,:,:,:]
 			tar_list.append(pixels)
 
-	Image.fromarray(src_list[10]).save('../layer2_prediction/src_img.png')
-	Image.fromarray(tar_list[10]).save('../layer2_prediction/tar_img.png')
+
 	print('images saved')
 	return np.asarray(src_list), np.asarray(tar_list)
 
 # load dataset
-[src_images, tar_images] = load_images()
-print('Loaded: ', src_images.shape, tar_images.shape)
+# [src_images, tar_images] = load_images()
+dataset = load('../../maps_ref_back.npz')
+print('Loaded', dataset[0].shape, dataset[1].shape)
+Image.fromarray(dataset[0][5]).save('../layer2_prediction/src_img.png')
+Image.fromarray(dataset[1][5]).save('../layer2_prediction/tar_img.png')
 # save as compressed numpy array
-filename = '../../data/maps_ref_back.npz'
-savez_compressed(filename, src_images, tar_images)
-print('Saved dataset: ', filename)
+# filename = '../../data/maps_ref_back.npz'
+# savez_compressed(filename, src_images, tar_images)
+# print('Saved dataset: ', filename)
 
 # #load output of 2nd layer as input
 # def load_images(size=(width, height)):
