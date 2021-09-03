@@ -41,10 +41,11 @@ def load_images():
 	src_list, tar_list = list(), list()
 	path = '../layer2_prediction/back_ref/'
 	for image in listdir(path):
-		img = load_img(path + image)
+		print(path+image)
+		img = load_image(path + image, target_size=(384,56))
 		np_img = img_to_array(img)
 		for i in range(frames):
-			img_curr = np_img[i*128:(i+1)*128,:,:]
+			img_curr = np_img[i*64:(i+1)*64,:,:]
 			print(img_curr.shape)
 			# img_curr = Image.fromarray(img_curr.astype(np.uint8))
 			# print(img_curr.size)
@@ -69,7 +70,8 @@ def load_images():
 # dataset = load('../../data/maps_ref_back.npz')
 #src_images, tar_images = dataset['arr_0'], dataset['arr_1']
 #print('Loaded', src_images.shape, tar_images.shape)
-print(src_images[0,:,:,:].shape)
+src_images = src_images.astype(np.uint8)
+print(src_images[0,:,:,:])
 Image.fromarray(src_images[67,:,:,:].astype(np.uint8)).save('../layer2_prediction/src_img.png')
 Image.fromarray(tar_images[67,:,:,:].astype(np.uint8)).save('../layer2_prediction/tar_img.png')
 print('images saved')
