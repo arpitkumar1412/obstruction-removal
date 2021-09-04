@@ -72,7 +72,8 @@ def load_images():
 	for i in range(batch):
 		for j in range(frames):
 			# load and resize the image
-			pixels = dataset[i,j,:,:,:]
+			img_curr = Image.fromarray(dataset[i,j,:,:,:].astype(np.uint8)).resize((256,256))
+			pixels = img_to_array(img_curr)
 			tar_list.append(pixels)
 
 
