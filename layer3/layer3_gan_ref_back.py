@@ -56,17 +56,9 @@ def load_images():
 	for image in listdir(path):
 		print(path+image)
 		img = Image.open(file).resize((256, 256 * 6))
-		np_img = asarray(img)
 		print('image saved')
 		for i in range(frames):
-			img_curr = np_img[i*256:(i+1)*256]
-			print(img_curr.shape)
-			# img_curr = Image.fromarray(img_curr.astype(np.uint8))
-			# print(img_curr.size)
-			# img_curr = img_curr.resize((width_final, height_final))
-			# #print(img_curr.size)
-			# np_img_new = np.array(img_curr)
-			src_list.append(np.asarray(img_curr))
+			src_list.append(asarray(img)[256*i:(i+1)256,:,:])
 
 
 	dataset = load('../../data/reflection-vid1.npy')
