@@ -3,6 +3,7 @@ from numpy import load
 from numpy import zeros
 from numpy import ones
 from numpy.random import randint
+from tensorflow import keras
 from keras.initializers import RandomNormal
 from keras.models import Model
 from keras.models import Input
@@ -15,6 +16,7 @@ from keras.layers import Concatenate
 from keras.layers import Dropout
 from keras.layers import BatchNormalization
 from keras.layers import LeakyReLU
+from keras.optimizers import Adam
 from keras.preprocessing.image import load_img
 from keras.preprocessing.image import img_to_array
 from matplotlib import pyplot
@@ -53,10 +55,10 @@ def load_images():
 	path = '../layer2_prediction/back_ref/'
 	for image in listdir(path):
 		print(path+image)
-		img = load_img(path + image, target_size=(384,56))
+		img = load_img(path + image, target_size=(256*6,256))
 		np_img = img_to_array(img)
 		for i in range(frames):
-			img_curr = np_img[i*64:(i+1)*64,:,:]
+			img_curr = np_img[i*256:(i+1)*256]
 			print(img_curr.shape)
 			# img_curr = Image.fromarray(img_curr.astype(np.uint8))
 			# print(img_curr.size)
@@ -77,19 +79,19 @@ def load_images():
 	return np.asarray(src_list), np.asarray(tar_list)
 
 # load dataset
-[src_images, tar_images] = load_images()
-img = load_img('../layer2_prediction/back_ref/' + 'back_ref0.png')
-img.save('test.png')
+#[src_images, tar_images] = load_images()
+#img = load_img('../layer2_prediction/back_ref/' + 'back_ref0.png')
+#img.save('test.png')
 # dataset = load('../../data/maps_ref_back.npz')
 #src_images, tar_images = dataset['arr_0'], dataset['arr_1']
-print('Loaded', src_images.shape, tar_images.shape)
-Image.fromarray((src_images[67,:,:,:]*255).astype(np.uint8)).save('../layer2_prediction/src_img.png')
-Image.fromarray(tar_images[67,:,:,:]).save('../layer2_prediction/tar_img.png')
-print('images saved')
+#print('Loaded', src_images.shape, tar_images.shape)
+#Image.fromarray((src_images[67,:,:,:]*255).astype(np.uint8)).save('../layer2_prediction/src_img.png')
+#Image.fromarray(tar_images[67,:,:,:]).save('../layer2_prediction/tar_img.png')
+#print('images saved')
 # save as compressed numpy array
-filename = '../../data/maps_ref_back.npz'
-savez_compressed(filename, src_images, tar_images)
-print('Saved dataset: ', filename)
+#filename = '../../data/maps_ref_back.npz'
+#savez_compressed(filename, src_images, tar_images)
+#print('Saved dataset: ', filename)
 
 # #load output of 2nd layer as input
 # def load_images(size=(width, height)):
@@ -320,7 +322,7 @@ def train(d_model, g_model, gan_model, dataset, n_epochs=10000, n_batch=10):
 			summarize_performance(i, g_model, dataset)
 
 # load image data
-dataset = load_real_samples('../../maps_ref_back.npz')
+dataset = load_real_samples('../../data/maps_ref_back.npz')
 print('Loaded', dataset[0].shape, dataset[1].shape)
 # define input shape based on the loaded dataset
 image_shape = dataset[0].shape[1:]
