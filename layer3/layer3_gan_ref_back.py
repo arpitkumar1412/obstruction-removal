@@ -56,16 +56,15 @@ def load_images():
 	for image in listdir(path):
 		print(path+image)
 		img = Image.open(path+image).resize((256, 256 * 6))
-		for i in range(frames):
-			src_list.append(asarray(img)[256*i:(i+1)*256,:,:])
+		src_list.append(asarray(img)[0:256,:,:])
 
 
 	dataset = load('../../data/reflection-vid1.npy')
 	for i in range(batch):
-		for j in range(frames):
+		#for j in range(frames):
 			# load and resize the image
-			img_curr = Image.fromarray(dataset[i,j,:,:,:].astype(np.uint8)).resize((256,256))
-			tar_list.append(asarray(img_curr))
+		img_curr = Image.fromarray(dataset[i,0,:,:,:].astype(np.uint8)).resize((256,256))
+		tar_list.append(asarray(img_curr))
 
 
 	return asarray(src_list), asarray(tar_list)
@@ -79,8 +78,8 @@ def load_images():
 print('Loaded', src_images.shape, tar_images.shape)
 print(type(src_images[0]))
 print(type(tar_images[0]))
-Image.fromarray((src_images[67]).astype(np.uint8)).save('../layer2_prediction/src_img.png')
-Image.fromarray((tar_images[67]).astype(np.uint8)).save('../layer2_prediction/tar_img.png')
+Image.fromarray((src_images[67])).save('../layer2_prediction/src_img.png')
+Image.fromarray((tar_images[67])).save('../layer2_prediction/tar_img.png')
 print('images saved')
 # save as compressed numpy array
 filename = '../../data/maps_ref_back.npz'
