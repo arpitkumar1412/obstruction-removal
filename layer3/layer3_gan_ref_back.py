@@ -80,19 +80,21 @@ def load_images():
 	return np.asarray(src_list), np.asarray(tar_list)
 
 # load dataset
-#[src_images, tar_images] = load_images()
+[src_images, tar_images] = load_images()
 #img = load_img('../layer2_prediction/back_ref/' + 'back_ref0.png')
 #img.save('test.png')
 # dataset = load('../../data/maps_ref_back.npz')
 #src_images, tar_images = dataset['arr_0'], dataset['arr_1']
-#print('Loaded', src_images.shape, tar_images.shape)
-#Image.fromarray((src_images[67,:,:,:]*255).astype(np.uint8)).save('../layer2_prediction/src_img.png')
-#Image.fromarray(tar_images[67,:,:,:]).save('../layer2_prediction/tar_img.png')
-#print('images saved')
+print('Loaded', src_images.shape, tar_images.shape)
+print(type(src_images[0]))
+print(type(tar_images[0]))
+Image.fromarray((src_images[67]).astype(np.uint8)).save('../layer2_prediction/src_img.png')
+Image.fromarray((tar_images[67]).astype(np.uint8)).save('../layer2_prediction/tar_img.png')
+print('images saved')
 # save as compressed numpy array
-#filename = '../../data/maps_ref_back.npz'
+filename = '../../data/maps_ref_back.npz'
 #savez_compressed(filename, src_images, tar_images)
-#print('Saved dataset: ', filename)
+print('Saved dataset: ', filename)
 
 # #load output of 2nd layer as input
 # def load_images(size=(width, height)):
@@ -323,7 +325,8 @@ def train(d_model, g_model, gan_model, dataset, n_epochs=10000, n_batch=10):
 			summarize_performance(i, g_model, dataset)
 
 # load image data
-dataset = load_real_samples('../../data/maps_ref_back.npz')
+dataset = [src_images, tar_images]
+#dataset = load_real_samples('../../data/maps_ref_back.npz')
 print('Loaded', dataset[0].shape, dataset[1].shape)
 # define input shape based on the loaded dataset
 image_shape = dataset[0].shape[1:]
