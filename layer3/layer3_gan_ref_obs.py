@@ -1,12 +1,13 @@
-# example of pix2pix gan for satellite to map image-to-image translation
+# Pix2pix GAN architecture used here for background layer of reflection problem
 from numpy import load
 from numpy import zeros
 from numpy import ones
 from numpy.random import randint
-from keras.optimizers import Adam
+from tensorflow import keras
 from keras.initializers import RandomNormal
 from keras.models import Model
 from keras.models import Input
+from keras.models import load_model
 from keras.layers import Conv2D
 from keras.layers import Conv2DTranspose, ZeroPadding2D
 from keras.layers import LeakyReLU
@@ -15,67 +16,50 @@ from keras.layers import Concatenate
 from keras.layers import Dropout
 from keras.layers import BatchNormalization
 from keras.layers import LeakyReLU
+from keras.optimizers import Adam
+from keras.preprocessing.image import load_img
+from keras.preprocessing.image import img_to_array
 from matplotlib import pyplot
 from os import listdir
 import numpy as np
 from numpy import asarray
 from numpy import vstack
-from keras.preprocessing.image import img_to_array
+from numpy import load
+from numpy import expand_dims
 from numpy import savez_compressed
 import torch
 from PIL import Image
 
 # load, split and scale the maps dataset ready for training
-width = 128
-height = 768
 batch = 1000
 frames = 6
-# load all images in a directory into memory
-# def load_images(size=(width, height)):
-#     # load image data
-#     dataset = load('maps_pred.npz')
-#     src_list, tar_list = list(), list()
-#     pred_ref_back = dataset['arr_0']
-#     pred_ref_back = asarray(torch.from_numpy(pred_ref_back).permute(0,1,4,3,2))
-#     print('Loaded', pred_ref_back.shape)
-#     # get all the images from map_pred.npz
-#     for i in range(batch):
-#         src_item = np.zeros((width*6,height,3), dtype=np.uint8)
-#         k=0
-#         for j in range(frames):
-#             # load and resize the image
-#             pixels = Image.fromarray(pred_ref_back[i,j,:,:,:].astype(np.uint8))
-#             pixels = pixels.resize((height,width))
-#             # convert to numpy array
-#             pixels = img_to_array(pixels)
-#             src_item[width*k:width*(k+1),:,:] = pixels
-#             k+=1
-#         src_list.append(src_item)
-#
-#     dataset = load('data/reflection-vid2.npy')
-#     print('Loaded', dataset.shape)
-#     # get all the images from data/vid1.npy
-#     for i in range(batch):
-#         tar_item = np.zeros((width*6,height,3), dtype=np.uint8)
-#         k=0
-#         for j in range(frames):
-#             # load and resize the image
-#             pixels = Image.fromarray(dataset[i,j,:,:,:])
-#             pixels = pixels.resize((height,width))
-#             # convert to numpy array
-#             pixels = img_to_array(pixels)
-#             tar_item[width*k:width*(k+1),:,:] = pixels
-#             k+=1
-#         tar_list.append(tar_item)
-#     return [asarray(src_list), asarray(tar_list)]
-#
-# # load dataset
-# [src_images, tar_images] = load_images()
-# print('Loaded: ', src_images.shape, tar_images.shape)
-# # save as compressed numpy array
-# filename = 'maps_ref_obs.npz'
-# savez_compressed(filename, src_images, tar_images)
-# print('Saved dataset: ', filename)
+
+def load_images():
+	src_list, tar_list = list(), list()
+	path = '../layer2_prediction/obs_ref/'
+	for image in listdir(path):
+		print(path+image)
+		img = Image.open(path+image).resize((256, 256 * 6))
+		for i in range(frames):
+			src_list.append(asarray(img)[i*256:(i+1)*256,:,:])
+
+	dataset = load('../../data/reflection-vid2.npy')
+	for i in range(batch):
+		for j in range(frames):
+			# load and resize the image
+			img_curr = Image.fromarray(dataset[i,j,:,:,:].astype(np.uint8)).resize((256,256))
+			tar_list.append(asarray(img_curr))
+
+	return asarray(src_list), asarray(tar_list)
+
+import tensorflow as tf
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
+
+# load dataset
+[src_images, tar_images] = load_images()
+filename = '../../data/maps_ref_obs.npz'
+savez_compressed(filename, src_images, tar_images)
+print('Saved dataset: ', filename)
 
 # define the discriminator model
 def define_discriminator(image_shape):
@@ -193,7 +177,7 @@ def define_gan(g_model, d_model, image_shape):
 	# src image as input, generated image and classification output
 	model = Model(in_src, [dis_out, gen_out])
 	# compile model
-	opt = Adam(lr=0.0002, beta_1=0.5)
+	opt = keras.optimizers.Adam(lr=0.0002, beta_1=0.5)
 	model.compile(loss=['binary_crossentropy', 'mae'], optimizer=opt, loss_weights=[1,100])
 	return model
 
@@ -230,40 +214,13 @@ def generate_fake_samples(g_model, samples, patch_shape):
 
 # generate samples and save as a plot and save the model
 def summarize_performance(step, g_model, dataset, n_samples=3):
-	# select a sample of input images
-	[X_realA, X_realB], _ = generate_real_samples(dataset, n_samples, 1)
-	# generate a batch of fake samples
-	X_fakeB, _ = generate_fake_samples(g_model, X_realA, 1)
-	# scale all pixels from [-1,1] to [0,1]
-	X_realA = (X_realA + 1) / 2.0
-	X_realB = (X_realB + 1) / 2.0
-	X_fakeB = (X_fakeB + 1) / 2.0
-	# plot real source images
-	for i in range(n_samples):
-		pyplot.subplot(3, n_samples, 1 + i)
-		pyplot.axis('off')
-		pyplot.imshow(X_realA[i])
-	# plot generated target image
-	for i in range(n_samples):
-		pyplot.subplot(3, n_samples, 1 + n_samples + i)
-		pyplot.axis('off')
-		pyplot.imshow(X_fakeB[i])
-	# plot real target image
-	for i in range(n_samples):
-		pyplot.subplot(3, n_samples, 1 + n_samples*2 + i)
-		pyplot.axis('off')
-		pyplot.imshow(X_realB[i])
-	# save plot to file
-	filename1 = 'plot_ref_obs.png'
-	pyplot.savefig(filename1)
-	pyplot.close()
 	# save the generator model
-	filename2 = 'model_ref_obs.h5'
+	filename2 = '../../models_3/model_ref_obs.h5'
 	g_model.save(filename2)
-	print('>Saved: %s and %s' % (filename1, filename2))
+	print('>Saved: %s ' % (filename2))
 
 # train pix2pix model
-def train(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
+def train(d_model, g_model, gan_model, dataset, n_epochs=20000, n_batch=10):
 	# determine the output square shape of the discriminator
 	n_patch = d_model.output_shape[1]
 	# unpack dataset
@@ -285,17 +242,17 @@ def train(d_model, g_model, gan_model, dataset, n_epochs=100, n_batch=1):
 		# update the generator
 		g_loss, _, _ = gan_model.train_on_batch(X_realA, [y_real, X_realB])
 		# summarize performance
-		print('ref_obs>%d, d1[%.3f] d2[%.3f] g[%.3f]' % (i+1, d_loss1, d_loss2, g_loss))
+		print('ref_back>%d, d1[%.3f] d2[%.3f] g[%.3f]' % (i+1, d_loss1, d_loss2, g_loss))
 		# summarize model performance
 		if (i+1) % (10) == 0:
 			summarize_performance(i, g_model, dataset)
 
 # load image data
-dataset = load_real_samples('maps_ref_obs.npz')
+# dataset = [src_images, tar_images]
+dataset = load_real_samples('../../data/maps_ref_obs.npz')
 print('Loaded', dataset[0].shape, dataset[1].shape)
 # define input shape based on the loaded dataset
 image_shape = dataset[0].shape[1:]
-# image_shape = (256,256,3)
 # define the models
 d_model = define_discriminator(image_shape)
 g_model = define_generator(image_shape)
@@ -303,3 +260,20 @@ g_model = define_generator(image_shape)
 gan_model = define_gan(g_model, d_model, image_shape)
 # train model
 train(d_model, g_model, gan_model, dataset)
+
+
+
+# #predict results
+# model = load_model('../../models_3/model_ref_back.h5')
+# # print(dataset[0][0].shape)
+# filename1 = 'test_input_ref_back.png'
+# img = Image.fromarray(dataset[0][0].astype(np.uint8))
+# img.save(filename1)
+# img = load_image('test_input_ref_back.png')
+# print(img.size)
+# result = model.predict(img)
+# # scale from [-1,1] to [0,1]
+# result = (result + 1) / 2.0
+# print(result[0].shape)
+# result = Image.fromarray(result[0].astype(np.uint8))
+# result.save('prediction.png')

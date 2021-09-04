@@ -31,26 +31,10 @@ import torch
 from PIL import Image
 
 # load, split and scale the maps dataset ready for training
-width = 768
-height = 128
-width_final = 56
-height_final = 64
 batch = 1000
 frames = 6
 
-# load an image
-def load_image(filename, size=(width*6,height)):
-	# load image with the preferred size
-	pixels = load_img(filename, target_size=size)
-	# convert to numpy array
-	pixels = img_to_array(pixels)
-	# scale from [0,255] to [-1,1]
-	pixels = (pixels - 127.5) / 127.5
-	# reshape to 1 sample
-	return pixels
-
 def load_images():
-
 	src_list, tar_list = list(), list()
 	path = '../layer2_prediction/back_ref/'
 	for image in listdir(path):
@@ -59,7 +43,6 @@ def load_images():
 		for i in range(frames):
 			src_list.append(asarray(img)[i*256:(i+1)*256,:,:])
 
-
 	dataset = load('../../data/reflection-vid1.npy')
 	for i in range(batch):
 		for j in range(frames):
@@ -67,70 +50,16 @@ def load_images():
 			img_curr = Image.fromarray(dataset[i,j,:,:,:].astype(np.uint8)).resize((256,256))
 			tar_list.append(asarray(img_curr))
 
-
 	return asarray(src_list), asarray(tar_list)
 
 import tensorflow as tf
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
 # load dataset
-[src_images, tar_images] = load_images()
-#img = load_img('../layer2_prediction/back_ref/' + 'back_ref0.png')
-#img.save('test.png')
-# dataset = load('../../data/maps_ref_back.npz')
-#src_images, tar_images = dataset['arr_0'], dataset['arr_1']
-print('Loaded', src_images.shape, tar_images.shape)
-print(type(src_images[0]))
-print(type(tar_images[0]))
-Image.fromarray((src_images[67])).save('../layer2_prediction/src_img.png')
-Image.fromarray((tar_images[67])).save('../layer2_prediction/tar_img.png')
-print('images saved')
-# save as compressed numpy array
-filename = '../../data/maps_ref_back.npz'
-savez_compressed(filename, src_images, tar_images)
-print('Saved dataset: ', filename)
-
-# #load output of 2nd layer as input
-# def load_images(size=(width, height)):
-#     # load image data
-#     dataset = load('../../data/maps_ref_back.npz')
-#     src_list, tar_list = list(), list()
-#     pred_ref_back = dataset['arr_1']
-#     pred_ref_back = asarray(torch.from_numpy(pred_ref_back).permute(0,1,4,3,2))
-#     print('Loaded', pred_ref_back.shape)
-#
-#     for i in range(batch):
-#         src_item = np.zeros((width*6,height,3), dtype=np.uint8)
-#         k=0
-#         for j in range(frames):
-#             # load and resize the image
-#             pixels = Image.fromarray(pred_ref_back[i,j,:,:,:].astype(np.uint8))
-#             pixels = pixels.resize((height,width))
-#             # convert to numpy array
-#             pixels = img_to_array(pixels)
-#             src_item[width*k:width*(k+1),:,:] = pixels
-#             k+=1
-#         src_list.append(src_item)
-#
-#     dataset = load('../../data/vid1.npy')
-#     dataset = dataset[1000:2000,:,:,:,:]
-#     print('Loaded', dataset.shape)
-#     # get all the images from data/vid1.npy
-#     for i in range(batch):
-#         tar_item = np.zeros((width*6,height,3), dtype=np.uint8)
-#         k=0
-#         for j in range(frames):
-#             # load and resize the image
-#             pixels = Image.fromarray(dataset[i,j,:,:,:])
-#             pixels = pixels.resize((height,width))
-#             # convert to numpy array
-#             pixels = img_to_array(pixels)
-#             tar_item[width*k:width*(k+1),:,:] = pixels
-#             k+=1
-#         tar_list.append(tar_item)
-#     return [asarray(src_list), asarray(tar_list)]
-
-
+#[src_images, tar_images] = load_images()
+# filename = '../../data/maps_ref_back.npz'
+# savez_compressed(filename, src_images, tar_images)
+# print('Saved dataset: ', filename)
 
 # define the discriminator model
 def define_discriminator(image_shape):
@@ -319,12 +248,11 @@ def train(d_model, g_model, gan_model, dataset, n_epochs=20000, n_batch=10):
 			summarize_performance(i, g_model, dataset)
 
 # load image data
-dataset = [src_images, tar_images]
-#dataset = load_real_samples('../../data/maps_ref_back.npz')
+# dataset = [src_images, tar_images]
+dataset = load_real_samples('../../data/maps_ref_back.npz')
 print('Loaded', dataset[0].shape, dataset[1].shape)
 # define input shape based on the loaded dataset
 image_shape = dataset[0].shape[1:]
-# image_shape = (256,256,3)
 # define the models
 d_model = define_discriminator(image_shape)
 g_model = define_generator(image_shape)
