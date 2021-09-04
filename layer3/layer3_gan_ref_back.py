@@ -56,18 +56,22 @@ def load_images():
 	for image in listdir(path):
 		print(path+image)
 		img = Image.open(path+image).resize((256, 256 * 6))
-		src_list.append(asarray(img)[0:256,:,:])
+		for i in range(frames):
+			src_list.append(asarray(img)[i*256:(i+1)*256,:,:])
 
 
 	dataset = load('../../data/reflection-vid1.npy')
 	for i in range(batch):
-		#for j in range(frames):
+		for j in range(frames):
 			# load and resize the image
-		img_curr = Image.fromarray(dataset[i,0,:,:,:].astype(np.uint8)).resize((256,256))
-		tar_list.append(asarray(img_curr))
+			img_curr = Image.fromarray(dataset[i,j,:,:,:].astype(np.uint8)).resize((256,256))
+			tar_list.append(asarray(img_curr))
 
 
 	return asarray(src_list), asarray(tar_list)
+
+import tensorflow as tf
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
 # load dataset
 [src_images, tar_images] = load_images()
@@ -83,7 +87,7 @@ Image.fromarray((tar_images[67])).save('../layer2_prediction/tar_img.png')
 print('images saved')
 # save as compressed numpy array
 filename = '../../data/maps_ref_back.npz'
-#savez_compressed(filename, src_images, tar_images)
+savez_compressed(filename, src_images, tar_images)
 print('Saved dataset: ', filename)
 
 # #load output of 2nd layer as input
@@ -287,7 +291,7 @@ def summarize_performance(step, g_model, dataset, n_samples=3):
 	print('>Saved: %s ' % (filename2))
 
 # train pix2pix model
-def train(d_model, g_model, gan_model, dataset, n_epochs=10000, n_batch=10):
+def train(d_model, g_model, gan_model, dataset, n_epochs=20000, n_batch=10):
 	# determine the output square shape of the discriminator
 	n_patch = d_model.output_shape[1]
 	# unpack dataset
