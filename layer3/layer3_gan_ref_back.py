@@ -55,7 +55,7 @@ def load_images():
 	path = '../layer2_prediction/back_ref/'
 	for image in listdir(path):
 		print(path+image)
-		img = Image.open(file).resize((256, 256 * 6))
+		img = Image.open(path+image).resize((256, 256 * 6))
 		np_img = asarray(img)
 		print('image saved')
 		for i in range(frames):
