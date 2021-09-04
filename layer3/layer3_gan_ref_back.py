@@ -55,8 +55,9 @@ def load_images():
 	path = '../layer2_prediction/back_ref/'
 	for image in listdir(path):
 		print(path+image)
-		img = load_img(path + image, target_size=(256*6,256))
-		np_img = img_to_array(img)
+		img = Image.open(file).resize((256, 256 * 6))
+		np_img = asarray(img)
+		print('image saved')
 		for i in range(frames):
 			img_curr = np_img[i*256:(i+1)*256]
 			print(img_curr.shape)
@@ -65,7 +66,7 @@ def load_images():
 			# img_curr = img_curr.resize((width_final, height_final))
 			# #print(img_curr.size)
 			# np_img_new = np.array(img_curr)
-			src_list.append(img_curr)
+			src_list.append(np.asarray(img_curr))
 
 
 	dataset = load('../../data/reflection-vid1.npy')
