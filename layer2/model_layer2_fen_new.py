@@ -107,6 +107,8 @@ mixed = np.load('../../data/fencing-mixed.npy')
 print(inp.shape)
 print("loading inputs")
 
+
+#Loading the encoder model here
 TORCH_R2PLUS1D = "moabitcoin/ig65m-pytorch"  # From https://github.com/moabitcoin/ig65m-pytorch
 MODELS = {
     # Model name followed by the number of output classes.
@@ -124,16 +126,8 @@ model_encoder = torch.hub.load(
             pretrained=True,
         )
 
-TORCH_R2PLUS1D = "moabitcoin/ig65m-pytorch"  # From https://github.com/moabitcoin/ig65m-pytorch
-MODELS = {
-    # Model name followed by the number of output classes.
-    "r2plus1d_34_32_ig65m": 359,
-    "r2plus1d_34_32_kinetics": 400,
-    "r2plus1d_34_8_ig65m": 487,
-    "r2plus1d_34_8_kinetics": 400,
-}
-model_name = 'r2plus1d_34_8_kinetics'
 
+#Loading the RAFT model here
 sys.path.append('../../RAFT/core/')
 from raft import RAFT
 from argparse import Namespace

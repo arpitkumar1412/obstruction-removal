@@ -5,8 +5,8 @@ import tensorflow as tf
 import os
 
 k = 0
-# loc = '../../data/reflection-final/'
-loc = 'test_data/'
+loc = '../../data/reflection-final/'
+# loc = 'test_data/'
 
 width=64
 height=56

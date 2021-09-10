@@ -108,6 +108,8 @@ mixed = np.load('../../data/reflection-mixed.npy')
 print(inp.shape)
 print("loading inputs")
 
+
+#Loading the encoder model
 TORCH_R2PLUS1D = "moabitcoin/ig65m-pytorch"  # From https://github.com/moabitcoin/ig65m-pytorch
 MODELS = {
     # Model name followed by the number of output classes.
@@ -118,6 +120,7 @@ MODELS = {
 }
 model_name = 'r2plus1d_34_8_kinetics'
 
+#Loading the optical flow model
 sys.path.append('../../RAFT/core/')
 from raft import RAFT
 from argparse import Namespace

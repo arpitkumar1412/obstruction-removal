@@ -120,14 +120,6 @@ inp = np.load('../data/fencing-inp.npy')
 print("data loaded")
 batch = mixed.shape[0]
 
-
-# pred_layer1_back = back.predict(tf.expand_dims(inp[i], axis=0))
-# pred_layer1_obs = obs.predict(tf.expand_dims(inp[i], axis=0))
-# print(pred_layer1_back.shape)
-# pred_layer1_back = tf.squeeze(pred_layer1_back)[0]
-# array_to_img(pred_layer1_back).save('prediction_layer1_1.png')
-# array_to_img(pred_layer1_obs).save('prediction_layer1_2.png')
-
 TORCH_R2PLUS1D = "moabitcoin/ig65m-pytorch"  # From https://github.com/moabitcoin/ig65m-pytorch
 MODELS = {
     # Model name followed by the number of output classes.
@@ -373,29 +365,12 @@ for i in range(batch):
 
     yhat_back = pred_back.permute(0,1,4,3,2)
     yhat_obs = pred_obs.permute(0,1,4,3,2)
-        #
-        # pred_back = np.squeeze(pred_back.detach().numpy())
-        # pred_obs = np.squeeze(pred_obs.detach().numpy())
 
     #predict results
-    # model = load_model('../models_3/model_ref_back.h5', compile=False)
     pred_back = np.squeeze(yhat_back.cpu().detach().numpy())
     pred_obs = np.squeeze(yhat_obs.cpu().detach().numpy())
     print(pred_back.shape)
     print(pred_obs.shape)
     pred_back = combine_images(pred_back, i, "back")
     pred_obs = combine_images(pred_obs, i, "obs")
-    # img_1 = Image.fromarray(pred_back)
-    # img_2 = Image.fromarray(pred_obs)
-    # img_1.save('layer2_prediction/back_fen/back_fen' + str(i) + '.png')
-    # img_2.save('layer2_prediction/obs_fen/obs_fen' + str(i) + '.png')
     print(i)
-     # pixels = img_to_array(pixels)
-# pixels = (pred_back - 127.5) / 127.5
-# img = expand_dims(pixels, 0)
-# print(img.size)
-# result = model.predict(img)
-# result = (result + 1) / 2.0
-# print(result[0].shape)
-# result = Image.fromarray(result[0].astype(np.uint8))
-# result.save('prediction.png')

@@ -60,12 +60,3 @@ print(X_train.shape, y_train.shape)
 checkpoint = ModelCheckpoint("../../models/back_fen.hdf5", monitor='loss', verbose=1,save_best_only=True, mode='auto', period=10)
 callbacks = [checkpoint]
 back.fit(X_train, y_train, batch_size=50, epochs=20000, validation_data=(X_test, y_test), shuffle=True, callbacks=callbacks)
-
-# back = tf.keras.models.load_model('../../models/back_fen.hdf5')
-# print(inp[0].shape)
-# test_case = np.expand_dims(inp[0], axis=0)
-# print(test_case.shape)
-# out = back.predict(test_case)
-# print(out.shape)
-# img = Image.fromarray(out[0][0].astype(np.uint8))
-# img.save('pred_layer1.png')

@@ -56,10 +56,10 @@ import tensorflow as tf
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
 # load dataset
-#[src_images, tar_images] = load_images()
-# filename = '../../data/maps_ref_back.npz'
-# savez_compressed(filename, src_images, tar_images)
-# print('Saved dataset: ', filename)
+[src_images, tar_images] = load_images()
+filename = '../../data/maps_ref_back.npz'
+savez_compressed(filename, src_images, tar_images)
+print('Saved dataset: ', filename)
 
 # define the discriminator model
 def define_discriminator(image_shape):
@@ -260,20 +260,3 @@ g_model = define_generator(image_shape)
 gan_model = define_gan(g_model, d_model, image_shape)
 # train model
 train(d_model, g_model, gan_model, dataset)
-
-
-
-# #predict results
-# model = load_model('../../models_3/model_ref_back.h5')
-# # print(dataset[0][0].shape)
-# filename1 = 'test_input_ref_back.png'
-# img = Image.fromarray(dataset[0][0].astype(np.uint8))
-# img.save(filename1)
-# img = load_image('test_input_ref_back.png')
-# print(img.size)
-# result = model.predict(img)
-# # scale from [-1,1] to [0,1]
-# result = (result + 1) / 2.0
-# print(result[0].shape)
-# result = Image.fromarray(result[0].astype(np.uint8))
-# result.save('prediction.png')
