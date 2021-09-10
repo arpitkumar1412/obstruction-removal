@@ -1,3 +1,5 @@
+#Script for testing the model
+
 import numpy as np
 from numpy import expand_dims
 import os
