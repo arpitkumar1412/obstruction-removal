@@ -20,3 +20,4 @@
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;------------- 0.jpg/1.jpg...(frame containing the foreground image(whether reflection or fences, depending on the problem), 896x512)<br></li><br>
 
 <li>The model has to be trained end-to-end and the pre-trained model cannot be provided at this time due their large size.</li><br>
+<li>The code for each layer can be found in their respective folder. Tensorflow has been used in layer1 and layer3 due to it's relative ease in coding and training, whereas in layer2, PyTorch is used as it was not possible to code the model in tensorflow easily.</li><br> 
